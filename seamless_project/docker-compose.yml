@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  seamless_api:
+    build:
+      context: ./seamless_api # Corrected: build context should be the directory containing the Dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - hf_cache:/home/user/.cache/huggingface 
+      # Optional: If generated audio files by TTS need to be persisted or accessed outside container directly
+      # - ./generated_audio_api:/home/user/app/generated_audio 
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # Request 1 GPU. Can be 'all' or a specific count.
+              capabilities: [gpu]
+    environment:
+      - HF_HOME=/home/user/.cache/huggingface # Explicitly set HF_HOME to ensure cache usage
+      # - NVIDIA_VISIBLE_DEVICES=all # Often handled by docker runtime with deploy key
+      # - NVIDIA_DRIVER_CAPABILITIES=compute,utility # Often handled by docker runtime
+
+  seamless_st:
+    build:
+      context: ./seamless_st # Corrected: build context should be the directory containing the Dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    depends_on:
+      - seamless_api
+    environment:
+      # Ensure Streamlit uses the correct network address for the API
+      # The API_URL in streamlit app is already http://seamless_api:8000, which is correct for docker-compose internal networking.
+      - PYTHONUNBUFFERED=1 # Good for seeing logs immediately
+
+volumes:
+  hf_cache: {} # Defines the named volume for Hugging Face cache
