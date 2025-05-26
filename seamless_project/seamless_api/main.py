@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask # For cleanup
 from pydantic import BaseModel
-from seamless_communication.models.inference import Translator
+from seamless_communication.inference import Translator
 
 # Global variable to hold the model translator
 model_translator: Translator = None

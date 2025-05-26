@@ -69,8 +69,8 @@ RUN echo "--- Inspecting site-packages for seamless_communication ---" && \
 
 # 3. Attempt to import the problematic module directly during the build
 # This will cause the build to fail if the module cannot be imported, providing early feedback.
-RUN echo "--- Attempting to import seamless_communication.models.inference ---" && \
-    python -c "import seamless_communication.models.inference; print('Import successful!')"
+RUN echo "--- Attempting to import seamless_communication.inference ---" && \
+    python -c "import seamless_communication.inference; print('Import successful!')"
 # --- DEBUGGING STEPS END ---
 
 COPY seamless_api/ ${HOME}/app/
