@@ -116,7 +116,8 @@ async def speech_to_text(audio_file: UploadFile = File(...)):
     temp_audio_path = None
     try:
         # Save uploaded audio file to a temporary path
-        fd, temp_audio_path = tempfile.mkstemp(suffix=".wav") # Assuming WAV, or let model handle format
+        # Using .wav for consistency, but Seamless might handle others
+        fd, temp_audio_path = tempfile.mkstemp(suffix=".wav") 
         os.close(fd) # Close descriptor, open with 'wb'
 
         with open(temp_audio_path, "wb") as buffer:
@@ -124,10 +125,11 @@ async def speech_to_text(audio_file: UploadFile = File(...)):
         
         print(f"Received STT request: Saved uploaded audio to temporary file: {temp_audio_path}")
 
+        # The model requires `tgt_lang` even for s2t_transcript, but the detected language is returned.
         transcribed_text, detected_language_code, _, _ = model_translator.predict(
             input=temp_audio_path,
             task_str="s2t_transcript", # Speech-to-Text (transcript)
-            tgt_lang="eng" # Required, but hoping `detected_language_code` gives the true language
+            tgt_lang="eng" # A required target language for the model's output, but not the source detection.
         )
 
         if transcribed_text is None or detected_language_code is None:
@@ -165,9 +167,11 @@ async def translate_text(request: TranslationRequest):
     try:
         print(f"Received Translation request: Text='{request.text}', Source='{request.source_language}', Target='{request.target_language}'")
         
+        # --- FIX APPLIED HERE ---
+        # Changed task_str from "t2tt_text" to "t2tt"
         translated_text, _, _, _ = model_translator.predict(
             input=request.text,
-            task_str="t2tt_text", # Text-to-Text Translation
+            task_str="t2tt", # CORRECTED TASK STRING for Text-to-Text Translation
             src_lang=request.source_language,
             tgt_lang=request.target_language
         )
@@ -201,7 +205,7 @@ async def text_to_speech(request: TTSRequest):
         
         output_text, audio_waveform, audio_sample_rate = model_translator.predict(
             input=request.text,
-            task_str="t2st_sync", # Text-to-Speech (and Text)
+            task_str="t2st_sync", # Text-to-Speech (and Text) - This task string is correct
             tgt_lang=request.target_language,
         )
 
