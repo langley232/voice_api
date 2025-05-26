@@ -1,16 +1,14 @@
-version: '3.8'
-
 services:
   seamless_api:
     build:
-      context: ./seamless_api # Corrected: build context should be the directory containing the Dockerfile
-      dockerfile: Dockerfile
+      context: . # Set the build context to the root of your project
+      dockerfile: seamless_api/Dockerfile # Specify the path to the Dockerfile within the context
     ports:
       - "8000:8000"
     volumes:
-      - hf_cache:/home/user/.cache/huggingface 
+      - hf_cache:/home/user/.cache/huggingface
       # Optional: If generated audio files by TTS need to be persisted or accessed outside container directly
-      # - ./generated_audio_api:/home/user/app/generated_audio 
+      # - ./generated_audio_api:/home/user/app/generated_audio
     deploy:
       resources:
         reservations:
@@ -25,7 +23,7 @@ services:
 
   seamless_st:
     build:
-      context: ./seamless_st # Corrected: build context should be the directory containing the Dockerfile
+      context: ./seamless_st # This context is correct as it points to the directory containing its Dockerfile
       dockerfile: Dockerfile
     ports:
       - "8501:8501"
@@ -38,3 +36,4 @@ services:
 
 volumes:
   hf_cache: {} # Defines the named volume for Hugging Face cache
+
