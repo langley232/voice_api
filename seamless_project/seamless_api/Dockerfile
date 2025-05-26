@@ -39,18 +39,39 @@ ARG PYTHON_VERSION=3.10.13
 RUN pyenv install ${PYTHON_VERSION} && \
     pyenv global ${PYTHON_VERSION} && \
     pyenv rehash && \
+    # Ensure pip, setuptools, and wheel are fully updated before installing other packages
     pip install --no-cache-dir -U pip setuptools wheel && \
     pip install --no-cache-dir "huggingface-hub==0.19.3" "hf-transfer==0.1.4"
 
-COPY whl ${HOME}/app/whl/
 
+COPY whl ${HOME}/app/whl/
 COPY seamless_api/requirements.txt ${HOME}/app/requirements.txt
 
-RUN pip install --no-cache-dir -r ${HOME}/app/requirements.txt
+# Install fairseq2 and then the local wheel file
+RUN pip install --no-cache-dir -r ${HOME}/app/requirements.txt && \
+    pip install --no-cache-dir fairseq2 --pre --extra-index-url https://fair.pkg.atmeta.com/fairseq2/pt2.1.0/cu121 && \
+    pip install --no-cache-dir ${HOME}/app/whl/seamless_communication-1.0.0-py3-none-any.whl
 
-RUN pip install --no-cache-dir fairseq2 --pre --extra-index-url https://fair.pkg.atmeta.com/fairseq2/pt2.1.0/cu121
+# --- DEBUGGING STEPS START ---
+# 1. Verify the wheel file is present in the expected location before installation
+RUN echo "--- Verifying seamless_communication wheel file presence ---" && \
+    ls -l ${HOME}/app/whl/seamless_communication-1.0.0-py3-none-any.whl || echo "Wheel file NOT found!"
 
-RUN pip install --no-cache-dir ${HOME}/app/whl/seamless_communication-1.0.0-py3-none-any.whl
+# 2. List all installed Python packages to check if seamless_communication appears
+RUN echo "--- Listing installed Python packages ---" && \
+    pip list
+
+# 4. Inspect the site-packages directory for seamless_communication (NEW STEP)
+# This will show if the package directory exists and what its contents are.
+RUN echo "--- Inspecting site-packages for seamless_communication ---" && \
+    ls -l ${HOME}/.pyenv/versions/${PYTHON_VERSION}/lib/python${PYTHON_VERSION%.*}/site-packages/seamless_communication* || \
+    echo "seamless_communication directory not found in site-packages!"
+
+# 3. Attempt to import the problematic module directly during the build
+# This will cause the build to fail if the module cannot be imported, providing early feedback.
+RUN echo "--- Attempting to import seamless_communication.models.inference ---" && \
+    python -c "import seamless_communication.models.inference; print('Import successful!')"
+# --- DEBUGGING STEPS END ---
 
 COPY seamless_api/ ${HOME}/app/
 
