@@ -1,3 +1,3 @@
 streamlit
 requests
-streamlit-webrtc
+streamlit-webrtc==0.30.0

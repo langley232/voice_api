@@ -20,211 +20,208 @@ Just set COMPOSE_BAKE=true
 #5 CACHED
 
 #6 [seamless_st internal] load build context
-#6 transferring context: 1.59kB done
+#6 transferring context: 147B done
 #6 DONE 0.0s
 
 #7 [seamless_st 3/8] COPY requirements.txt .
 #7 DONE 0.0s
 
 #8 [seamless_st 4/8] RUN pip install --no-cache-dir -r requirements.txt
-#8 1.700 Collecting streamlit
-#8 1.821   Downloading streamlit-1.45.1-py3-none-any.whl (9.9 MB)
-#8 1.892      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.9/9.9 MB 142.0 MB/s eta 0:00:00
-#8 1.947 Collecting requests
-#8 1.951   Downloading requests-2.32.3-py3-none-any.whl (64 kB)
-#8 1.953      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 398.4 MB/s eta 0:00:00
-#8 2.084 Collecting streamlit-webrtc
-#8 2.088   Downloading streamlit_webrtc-0.62.4-py3-none-any.whl (217 kB)
-#8 2.090      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 217.3/217.3 kB 368.0 MB/s eta 0:00:00
-#8 2.310 Collecting pandas<3,>=1.4.0
-#8 2.315   Downloading pandas-2.2.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (13.1 MB)
-#8 2.351      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.1/13.1 MB 386.3 MB/s eta 0:00:00
-#8 2.727 Collecting numpy<3,>=1.23
-#8 2.731   Downloading numpy-2.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.8 MB)
-#8 2.802      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.8/16.8 MB 250.5 MB/s eta 0:00:00
-#8 2.870 Collecting typing-extensions<5,>=4.4.0
-#8 2.906   Downloading typing_extensions-4.13.2-py3-none-any.whl (45 kB)
-#8 2.908      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.8/45.8 kB 98.6 MB/s eta 0:00:00
-#8 2.933 Collecting cachetools<6,>=4.0
-#8 2.936   Downloading cachetools-5.5.2-py3-none-any.whl (10 kB)
-#8 3.015 Collecting altair<6,>=4.0
-#8 3.019   Downloading altair-5.5.0-py3-none-any.whl (731 kB)
-#8 3.022      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 731.2/731.2 kB 460.0 MB/s eta 0:00:00
-#8 3.050 Collecting packaging<25,>=20
-#8 3.053   Downloading packaging-24.2-py3-none-any.whl (65 kB)
-#8 3.055      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 65.5/65.5 kB 407.6 MB/s eta 0:00:00
-#8 3.071 Collecting blinker<2,>=1.5.0
-#8 3.074   Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
-#8 3.097 Collecting pydeck<1,>=0.8.0b4
-#8 3.101   Downloading pydeck-0.9.1-py2.py3-none-any.whl (6.9 MB)
-#8 3.126      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 288.7 MB/s eta 0:00:00
-#8 3.196 Collecting tornado<7,>=6.0.3
-#8 3.200   Downloading tornado-6.5.1-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (443 kB)
-#8 3.203      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 443.3/443.3 kB 498.1 MB/s eta 0:00:00
-#8 3.354 Collecting pyarrow>=7.0
-#8 3.358   Downloading pyarrow-20.0.0-cp310-cp310-manylinux_2_28_x86_64.whl (42.3 MB)
-#8 3.475      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 42.3/42.3 MB 386.9 MB/s eta 0:00:00
-#8 3.840 Collecting pillow<12,>=7.1.0
-#8 3.846   Downloading pillow-11.2.1-cp310-cp310-manylinux_2_28_x86_64.whl (4.6 MB)
-#8 3.859      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.6/4.6 MB 405.4 MB/s eta 0:00:00
-#8 3.888 Collecting tenacity<10,>=8.1.0
-#8 3.892   Downloading tenacity-9.1.2-py3-none-any.whl (28 kB)
-#8 3.980 Collecting watchdog<7,>=2.1.5
-#8 3.984   Downloading watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl (79 kB)
-#8 3.986      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.1/79.1 kB 397.1 MB/s eta 0:00:00
-#8 4.029 Collecting gitpython!=3.1.19,<4,>=3.0.7
-#8 4.033   Downloading GitPython-3.1.44-py3-none-any.whl (207 kB)
-#8 4.035      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 207.6/207.6 kB 479.8 MB/s eta 0:00:00
-#8 4.062 Collecting click<9,>=7.0
-#8 4.065   Downloading click-8.2.1-py3-none-any.whl (102 kB)
-#8 4.067      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 102.2/102.2 kB 441.0 MB/s eta 0:00:00
-#8 4.079 Collecting toml<2,>=0.10.1
-#8 4.082   Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
-#8 4.419 Collecting protobuf<7,>=3.20
-#8 4.423   Downloading protobuf-6.31.0-cp39-abi3-manylinux2014_x86_64.whl (320 kB)
-#8 4.426      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 320.9/320.9 kB 475.3 MB/s eta 0:00:00
-#8 4.575 Collecting charset-normalizer<4,>=2
-#8 4.579   Downloading charset_normalizer-3.4.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (149 kB)
-#8 4.582      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 149.5/149.5 kB 458.8 MB/s eta 0:00:00
-#8 4.600 Collecting idna<4,>=2.5
-#8 4.604   Downloading idna-3.10-py3-none-any.whl (70 kB)
-#8 4.606      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 409.0 MB/s eta 0:00:00
-#8 4.633 Collecting certifi>=2017.4.17
-#8 4.636   Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
-#8 4.638      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 159.6/159.6 kB 474.4 MB/s eta 0:00:00
-#8 4.684 Collecting urllib3<3,>=1.21.1
-#8 4.688   Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
-#8 4.690      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 128.7/128.7 kB 463.1 MB/s eta 0:00:00
-#8 4.727 Collecting aioice>=0.10.0
-#8 4.732   Downloading aioice-0.10.1-py3-none-any.whl (24 kB)
-#8 4.807 Collecting aiortc>=1.11.0
-#8 4.811   Downloading aiortc-1.12.0-py3-none-any.whl (90 kB)
-#8 4.813      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.1/90.1 kB 427.9 MB/s eta 0:00:00
-#8 4.834 Collecting ifaddr>=0.2.0
-#8 4.839   Downloading ifaddr-0.2.0-py3-none-any.whl (12 kB)
-#8 4.857 Collecting dnspython>=2.0.0
-#8 4.861   Downloading dnspython-2.7.0-py3-none-any.whl (313 kB)
-#8 4.863      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 313.6/313.6 kB 493.0 MB/s eta 0:00:00
-#8 5.204 Collecting cryptography>=44.0.0
-#8 5.208   Downloading cryptography-45.0.3-cp37-abi3-manylinux_2_34_x86_64.whl (4.5 MB)
-#8 5.226      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 268.5 MB/s eta 0:00:00
-#8 5.256 Collecting pyee>=13.0.0
-#8 5.260   Downloading pyee-13.0.0-py3-none-any.whl (15 kB)
-#8 5.313 Collecting pylibsrtp>=0.10.0
-#8 5.317   Downloading pylibsrtp-0.12.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
-#8 5.333      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 162.6 MB/s eta 0:00:00
-#8 5.572 Collecting cffi>=1.0.0
-#8 5.576   Downloading cffi-1.17.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (446 kB)
-#8 5.580      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 446.2/446.2 kB 402.8 MB/s eta 0:00:00
-#8 5.660 Collecting av<15.0.0,>=14.0.0
-#8 5.664   Downloading av-14.4.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (34.8 MB)
-#8 5.858      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 34.8/34.8 MB 243.0 MB/s eta 0:00:00
-#8 5.986 Collecting google-crc32c>=1.1
-#8 5.990   Downloading google_crc32c-1.7.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (38 kB)
-#8 6.012 Collecting pyopenssl>=25.0.0
-#8 6.015   Downloading pyopenssl-25.1.0-py3-none-any.whl (56 kB)
-#8 6.017      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.8/56.8 kB 374.9 MB/s eta 0:00:00
-#8 6.063 Collecting jinja2
-#8 6.066   Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
-#8 6.068      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 428.5 MB/s eta 0:00:00
-#8 6.108 Collecting jsonschema>=3.0
-#8 6.112   Downloading jsonschema-4.23.0-py3-none-any.whl (88 kB)
-#8 6.114      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 88.5/88.5 kB 421.5 MB/s eta 0:00:00
-#8 6.187 Collecting narwhals>=1.14.2
-#8 6.191   Downloading narwhals-1.41.0-py3-none-any.whl (357 kB)
-#8 6.194      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 358.0/358.0 kB 460.7 MB/s eta 0:00:00
-#8 6.235 Collecting gitdb<5,>=4.0.1
-#8 6.238   Downloading gitdb-4.0.12-py3-none-any.whl (62 kB)
-#8 6.240      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.8/62.8 kB 386.3 MB/s eta 0:00:00
-#8 6.346 Collecting tzdata>=2022.7
-#8 6.349   Downloading tzdata-2025.2-py2.py3-none-any.whl (347 kB)
-#8 6.353      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 347.8/347.8 kB 477.6 MB/s eta 0:00:00
-#8 6.409 Collecting pytz>=2020.1
-#8 6.412   Downloading pytz-2025.2-py2.py3-none-any.whl (509 kB)
-#8 6.415      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 509.2/509.2 kB 311.0 MB/s eta 0:00:00
-#8 6.437 Collecting python-dateutil>=2.8.2
-#8 6.440   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
-#8 6.442      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 446.6 MB/s eta 0:00:00
-#8 6.529 Collecting pycparser
-#8 6.532   Downloading pycparser-2.22-py3-none-any.whl (117 kB)
-#8 6.534      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 117.6/117.6 kB 441.7 MB/s eta 0:00:00
-#8 6.593 Collecting smmap<6,>=3.0.1
-#8 6.597   Downloading smmap-5.0.2-py3-none-any.whl (24 kB)
-#8 6.704 Collecting MarkupSafe>=2.0
-#8 6.707   Downloading MarkupSafe-3.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (20 kB)
-#8 6.785 Collecting jsonschema-specifications>=2023.03.6
-#8 6.788   Downloading jsonschema_specifications-2025.4.1-py3-none-any.whl (18 kB)
-#8 6.811 Collecting attrs>=22.2.0
-#8 6.814   Downloading attrs-25.3.0-py3-none-any.whl (63 kB)
-#8 6.816      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 63.8/63.8 kB 390.1 MB/s eta 0:00:00
-#8 6.858 Collecting referencing>=0.28.4
-#8 6.861   Downloading referencing-0.36.2-py3-none-any.whl (26 kB)
-#8 7.357 Collecting rpds-py>=0.7.1
-#8 7.360   Downloading rpds_py-0.25.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (386 kB)
-#8 7.364      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 387.0/387.0 kB 279.0 MB/s eta 0:00:00
-#8 7.450 Collecting six>=1.5
-#8 7.454   Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
-#8 7.905 Installing collected packages: pytz, ifaddr, watchdog, urllib3, tzdata, typing-extensions, tornado, toml, tenacity, smmap, six, rpds-py, pycparser, pyarrow, protobuf, pillow, packaging, numpy, narwhals, MarkupSafe, idna, google-crc32c, dnspython, click, charset-normalizer, certifi, cachetools, blinker, av, attrs, requests, referencing, python-dateutil, pyee, jinja2, gitdb, cffi, aioice, pylibsrtp, pydeck, pandas, jsonschema-specifications, gitpython, cryptography, pyopenssl, jsonschema, altair, aiortc, streamlit, streamlit-webrtc
-#8 17.77 Successfully installed MarkupSafe-3.0.2 aioice-0.10.1 aiortc-1.12.0 altair-5.5.0 attrs-25.3.0 av-14.4.0 blinker-1.9.0 cachetools-5.5.2 certifi-2025.4.26 cffi-1.17.1 charset-normalizer-3.4.2 click-8.2.1 cryptography-45.0.3 dnspython-2.7.0 gitdb-4.0.12 gitpython-3.1.44 google-crc32c-1.7.1 idna-3.10 ifaddr-0.2.0 jinja2-3.1.6 jsonschema-4.23.0 jsonschema-specifications-2025.4.1 narwhals-1.41.0 numpy-2.2.6 packaging-24.2 pandas-2.2.3 pillow-11.2.1 protobuf-6.31.0 pyarrow-20.0.0 pycparser-2.22 pydeck-0.9.1 pyee-13.0.0 pylibsrtp-0.12.0 pyopenssl-25.1.0 python-dateutil-2.9.0.post0 pytz-2025.2 referencing-0.36.2 requests-2.32.3 rpds-py-0.25.1 six-1.17.0 smmap-5.0.2 streamlit-1.45.1 streamlit-webrtc-0.62.4 tenacity-9.1.2 toml-0.10.2 tornado-6.5.1 typing-extensions-4.13.2 tzdata-2025.2 urllib3-2.4.0 watchdog-6.0.0
-#8 17.77 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
-#8 17.86 
-#8 17.86 [notice] A new release of pip is available: 23.0.1 -> 25.1.1
-#8 17.86 [notice] To update, run: pip install --upgrade pip
-#8 DONE 18.7s
+#8 1.658 Collecting streamlit
+#8 1.769   Downloading streamlit-1.45.1-py3-none-any.whl (9.9 MB)
+#8 1.834      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.9/9.9 MB 156.6 MB/s eta 0:00:00
+#8 1.938 Collecting requests
+#8 1.942   Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+#8 1.944      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 377.5 MB/s eta 0:00:00
+#8 2.071 Collecting streamlit-webrtc==0.30.0
+#8 2.198   Downloading streamlit_webrtc-0.30.0-py3-none-any.whl (882 kB)
+#8 2.202      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 882.7/882.7 kB 321.0 MB/s eta 0:00:00
+#8 2.352 Collecting aiortc<2.0.0,>=1.1.2
+#8 2.359   Downloading aiortc-1.12.0-py3-none-any.whl (90 kB)
+#8 2.361      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.1/90.1 kB 401.4 MB/s eta 0:00:00
+#8 2.388 Collecting toml<2,>=0.10.1
+#8 2.392   Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+#8 2.419 Collecting packaging<25,>=20
+#8 2.422   Downloading packaging-24.2-py3-none-any.whl (65 kB)
+#8 2.424      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 65.5/65.5 kB 414.5 MB/s eta 0:00:00
+#8 2.446 Collecting tenacity<10,>=8.1.0
+#8 2.449   Downloading tenacity-9.1.2-py3-none-any.whl (28 kB)
+#8 2.473 Collecting typing-extensions<5,>=4.4.0
+#8 2.477   Downloading typing_extensions-4.13.2-py3-none-any.whl (45 kB)
+#8 2.479      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.8/45.8 kB 319.0 MB/s eta 0:00:00
+#8 2.790 Collecting protobuf<7,>=3.20
+#8 2.793   Downloading protobuf-6.31.0-cp39-abi3-manylinux2014_x86_64.whl (320 kB)
+#8 2.796      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 320.9/320.9 kB 483.0 MB/s eta 0:00:00
+#8 2.819 Collecting cachetools<6,>=4.0
+#8 2.823   Downloading cachetools-5.5.2-py3-none-any.whl (10 kB)
+#8 2.995 Collecting pyarrow>=7.0
+#8 3.000   Downloading pyarrow-20.0.0-cp310-cp310-manylinux_2_28_x86_64.whl (42.3 MB)
+#8 3.190      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 42.3/42.3 MB 353.3 MB/s eta 0:00:00
+#8 3.265 Collecting pydeck<1,>=0.8.0b4
+#8 3.269   Downloading pydeck-0.9.1-py2.py3-none-any.whl (6.9 MB)
+#8 3.299      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 246.9 MB/s eta 0:00:00
+#8 3.334 Collecting click<9,>=7.0
+#8 3.337   Downloading click-8.2.1-py3-none-any.whl (102 kB)
+#8 3.339      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 102.2/102.2 kB 445.0 MB/s eta 0:00:00
+#8 3.400 Collecting tornado<7,>=6.0.3
+#8 3.407   Downloading tornado-6.5.1-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (443 kB)
+#8 3.412      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 443.3/443.3 kB 438.5 MB/s eta 0:00:00
+#8 3.456 Collecting gitpython!=3.1.19,<4,>=3.0.7
+#8 3.461   Downloading GitPython-3.1.44-py3-none-any.whl (207 kB)
+#8 3.463      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 207.6/207.6 kB 277.5 MB/s eta 0:00:00
+#8 3.477 Collecting blinker<2,>=1.5.0
+#8 3.481   Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+#8 3.836 Collecting numpy<3,>=1.23
+#8 3.842   Downloading numpy-2.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.8 MB)
+#8 3.909      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.8/16.8 MB 402.5 MB/s eta 0:00:00
+#8 4.140 Collecting pandas<3,>=1.4.0
+#8 4.144   Downloading pandas-2.2.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (13.1 MB)
+#8 4.476      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.1/13.1 MB 32.1 MB/s eta 0:00:00
+#8 4.833 Collecting pillow<12,>=7.1.0
+#8 4.837   Downloading pillow-11.2.1-cp310-cp310-manylinux_2_28_x86_64.whl (4.6 MB)
+#8 4.862      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.6/4.6 MB 201.7 MB/s eta 0:00:00
+#8 4.959 Collecting watchdog<7,>=2.1.5
+#8 4.962   Downloading watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl (79 kB)
+#8 4.964      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.1/79.1 kB 382.1 MB/s eta 0:00:00
+#8 4.985 Collecting altair<6,>=4.0
+#8 4.989   Downloading altair-5.5.0-py3-none-any.whl (731 kB)
+#8 4.993      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 731.2/731.2 kB 458.1 MB/s eta 0:00:00
+#8 5.045 Collecting urllib3<3,>=1.21.1
+#8 5.048   Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+#8 5.050      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 128.7/128.7 kB 463.5 MB/s eta 0:00:00
+#8 5.068 Collecting idna<4,>=2.5
+#8 5.071   Downloading idna-3.10-py3-none-any.whl (70 kB)
+#8 5.073      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 369.7 MB/s eta 0:00:00
+#8 5.218 Collecting charset-normalizer<4,>=2
+#8 5.222   Downloading charset_normalizer-3.4.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (149 kB)
+#8 5.224      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 149.5/149.5 kB 452.0 MB/s eta 0:00:00
+#8 5.250 Collecting certifi>=2017.4.17
+#8 5.253   Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+#8 5.255      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 159.6/159.6 kB 482.9 MB/s eta 0:00:00
+#8 5.458 Collecting cffi>=1.0.0
+#8 5.461   Downloading cffi-1.17.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (446 kB)
+#8 5.465      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 446.2/446.2 kB 420.5 MB/s eta 0:00:00
+#8 5.552 Collecting google-crc32c>=1.1
+#8 5.556   Downloading google_crc32c-1.7.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (38 kB)
+#8 5.634 Collecting aioice<1.0.0,>=0.10.1
+#8 5.650   Downloading aioice-0.10.1-py3-none-any.whl (24 kB)
+#8 6.019 Collecting cryptography>=44.0.0
+#8 6.024   Downloading cryptography-45.0.3-cp37-abi3-manylinux_2_34_x86_64.whl (4.5 MB)
+#8 6.038      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 386.4 MB/s eta 0:00:00
+#8 6.154 Collecting pylibsrtp>=0.10.0
+#8 6.159   Downloading pylibsrtp-0.12.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+#8 6.176      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 158.7 MB/s eta 0:00:00
+#8 6.199 Collecting pyee>=13.0.0
+#8 6.203   Downloading pyee-13.0.0-py3-none-any.whl (15 kB)
+#8 6.224 Collecting pyopenssl>=25.0.0
+#8 6.227   Downloading pyopenssl-25.1.0-py3-none-any.whl (56 kB)
+#8 6.229      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.8/56.8 kB 349.2 MB/s eta 0:00:00
+#8 6.308 Collecting av<15.0.0,>=14.0.0
+#8 6.313   Downloading av-14.4.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (34.8 MB)
+#8 6.508      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 34.8/34.8 MB 166.5 MB/s eta 0:00:00
+#8 6.600 Collecting jinja2
+#8 6.604   Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+#8 6.606      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 445.1 MB/s eta 0:00:00
+#8 6.644 Collecting jsonschema>=3.0
+#8 6.648   Downloading jsonschema-4.24.0-py3-none-any.whl (88 kB)
+#8 6.650      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 88.7/88.7 kB 436.1 MB/s eta 0:00:00
+#8 6.721 Collecting narwhals>=1.14.2
+#8 6.725   Downloading narwhals-1.41.0-py3-none-any.whl (357 kB)
+#8 6.728      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 358.0/358.0 kB 496.9 MB/s eta 0:00:00
+#8 6.764 Collecting gitdb<5,>=4.0.1
+#8 6.767   Downloading gitdb-4.0.12-py3-none-any.whl (62 kB)
+#8 6.769      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.8/62.8 kB 362.4 MB/s eta 0:00:00
+#8 6.865 Collecting tzdata>=2022.7
+#8 6.870   Downloading tzdata-2025.2-py2.py3-none-any.whl (347 kB)
+#8 6.873      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 347.8/347.8 kB 211.7 MB/s eta 0:00:00
+#8 6.895 Collecting python-dateutil>=2.8.2
+#8 6.898   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+#8 6.900      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 485.7 MB/s eta 0:00:00
+#8 6.958 Collecting pytz>=2020.1
+#8 6.962   Downloading pytz-2025.2-py2.py3-none-any.whl (509 kB)
+#8 6.971      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 509.2/509.2 kB 147.5 MB/s eta 0:00:00
+#8 7.058 Collecting ifaddr>=0.2.0
+#8 7.063   Downloading ifaddr-0.2.0-py3-none-any.whl (12 kB)
+#8 7.082 Collecting dnspython>=2.0.0
+#8 7.086   Downloading dnspython-2.7.0-py3-none-any.whl (313 kB)
+#8 7.088      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 313.6/313.6 kB 505.8 MB/s eta 0:00:00
+#8 7.107 Collecting pycparser
+#8 7.110   Downloading pycparser-2.22-py3-none-any.whl (117 kB)
+#8 7.112      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 117.6/117.6 kB 436.0 MB/s eta 0:00:00
+#8 7.156 Collecting smmap<6,>=3.0.1
+#8 7.159   Downloading smmap-5.0.2-py3-none-any.whl (24 kB)
+#8 7.263 Collecting MarkupSafe>=2.0
+#8 7.267   Downloading MarkupSafe-3.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (20 kB)
+#8 7.300 Collecting jsonschema-specifications>=2023.03.6
+#8 7.303   Downloading jsonschema_specifications-2025.4.1-py3-none-any.whl (18 kB)
+#8 7.849 Collecting rpds-py>=0.7.1
+#8 7.853   Downloading rpds_py-0.25.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (386 kB)
+#8 7.856      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 387.0/387.0 kB 446.3 MB/s eta 0:00:00
+#8 7.879 Collecting attrs>=22.2.0
+#8 7.882   Downloading attrs-25.3.0-py3-none-any.whl (63 kB)
+#8 7.884      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 63.8/63.8 kB 389.6 MB/s eta 0:00:00
+#8 7.925 Collecting referencing>=0.28.4
+#8 7.928   Downloading referencing-0.36.2-py3-none-any.whl (26 kB)
+#8 8.012 Collecting six>=1.5
+#8 8.015   Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+#8 8.488 Installing collected packages: pytz, ifaddr, watchdog, urllib3, tzdata, typing-extensions, tornado, toml, tenacity, smmap, six, rpds-py, pycparser, pyarrow, protobuf, pillow, packaging, numpy, narwhals, MarkupSafe, idna, google-crc32c, dnspython, click, charset-normalizer, certifi, cachetools, blinker, av, attrs, requests, referencing, python-dateutil, pyee, jinja2, gitdb, cffi, aioice, pylibsrtp, pydeck, pandas, jsonschema-specifications, gitpython, cryptography, pyopenssl, jsonschema, altair, aiortc, streamlit, streamlit-webrtc
+#8 18.34 Successfully installed MarkupSafe-3.0.2 aioice-0.10.1 aiortc-1.12.0 altair-5.5.0 attrs-25.3.0 av-14.4.0 blinker-1.9.0 cachetools-5.5.2 certifi-2025.4.26 cffi-1.17.1 charset-normalizer-3.4.2 click-8.2.1 cryptography-45.0.3 dnspython-2.7.0 gitdb-4.0.12 gitpython-3.1.44 google-crc32c-1.7.1 idna-3.10 ifaddr-0.2.0 jinja2-3.1.6 jsonschema-4.24.0 jsonschema-specifications-2025.4.1 narwhals-1.41.0 numpy-2.2.6 packaging-24.2 pandas-2.2.3 pillow-11.2.1 protobuf-6.31.0 pyarrow-20.0.0 pycparser-2.22 pydeck-0.9.1 pyee-13.0.0 pylibsrtp-0.12.0 pyopenssl-25.1.0 python-dateutil-2.9.0.post0 pytz-2025.2 referencing-0.36.2 requests-2.32.3 rpds-py-0.25.1 six-1.17.0 smmap-5.0.2 streamlit-1.45.1 streamlit-webrtc-0.30.0 tenacity-9.1.2 toml-0.10.2 tornado-6.5.1 typing-extensions-4.13.2 tzdata-2025.2 urllib3-2.4.0 watchdog-6.0.0
+#8 18.34 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+#8 18.43 
+#8 18.43 [notice] A new release of pip is available: 23.0.1 -> 25.1.1
+#8 18.43 [notice] To update, run: pip install --upgrade pip
+#8 DONE 19.3s
 
 #9 [seamless_st 5/8] RUN echo "--- Listing installed Python packages in seamless_st ---" &&     pip list | grep streamlit-webrtc || echo "streamlit-webrtc not found in pip list!"
-#9 0.139 --- Listing installed Python packages in seamless_st ---
-#9 0.578 
-#9 0.578 [notice] A new release of pip is available: 23.0.1 -> 25.1.1
-#9 0.578 [notice] To update, run: pip install --upgrade pip
-#9 0.623 streamlit-webrtc          0.62.4
+#9 0.148 --- Listing installed Python packages in seamless_st ---
+#9 0.586 
+#9 0.586 [notice] A new release of pip is available: 23.0.1 -> 25.1.1
+#9 0.586 [notice] To update, run: pip install --upgrade pip
+#9 0.630 streamlit-webrtc          0.30.0
 #9 DONE 0.6s
 
 #10 [seamless_st 6/8] RUN echo "--- Inspecting streamlit_webrtc installation directory ---" &&     SITE_PACKAGES_PATH=$(python -c "import site; print(site.getsitepackages()[0])") &&     ls -l "${SITE_PACKAGES_PATH}/streamlit_webrtc" ||     echo "streamlit_webrtc directory not found in site-packages!"
-#10 0.150 --- Inspecting streamlit_webrtc installation directory ---
-#10 0.162 total 164
-#10 0.162 -rw-r--r-- 1 root root  2273 May 26 15:46 __init__.py
-#10 0.162 drwxr-xr-x 2 root root  4096 May 26 15:46 __pycache__
-#10 0.162 -rw-r--r-- 1 root root  4384 May 26 15:46 _compat.py
-#10 0.162 -rw-r--r-- 1 root root 28269 May 26 15:46 component.py
-#10 0.162 -rw-r--r-- 1 root root  2401 May 26 15:46 components_callbacks.py
-#10 0.162 -rw-r--r-- 1 root root  5544 May 26 15:46 config.py
-#10 0.162 -rw-r--r-- 1 root root  4619 May 26 15:46 credentials.py
-#10 0.162 -rw-r--r-- 1 root root  1333 May 26 15:46 eventloop.py
-#10 0.162 -rw-r--r-- 1 root root  6820 May 26 15:46 factory.py
-#10 0.162 drwxr-xr-x 3 root root  4096 May 26 15:46 frontend
-#10 0.162 -rw-r--r-- 1 root root  8775 May 26 15:46 mix.py
-#10 0.162 -rw-r--r-- 1 root root  6308 May 26 15:46 models.py
-#10 0.162 -rw-r--r-- 1 root root  7878 May 26 15:46 process.py
-#10 0.162 -rw-r--r-- 1 root root     0 May 26 15:46 py.typed
-#10 0.162 -rw-r--r-- 1 root root  2922 May 26 15:46 receive.py
-#10 0.162 -rw-r--r-- 1 root root   896 May 26 15:46 relay.py
-#10 0.162 -rw-r--r-- 1 root root  1489 May 26 15:46 server.py
-#10 0.162 -rw-r--r-- 1 root root  2313 May 26 15:46 session_info.py
-#10 0.162 -rw-r--r-- 1 root root  2353 May 26 15:46 shutdown.py
-#10 0.162 -rw-r--r-- 1 root root  2263 May 26 15:46 source.py
-#10 0.162 -rw-r--r-- 1 root root 29900 May 26 15:46 webrtc.py
+#10 0.181 --- Inspecting streamlit_webrtc installation directory ---
+#10 0.193 total 104
+#10 0.193 -rw-r--r-- 1 root root  1838 May 26 18:59 __init__.py
+#10 0.193 drwxr-xr-x 2 root root  4096 May 26 18:59 __pycache__
+#10 0.193 -rw-r--r-- 1 root root 18856 May 26 18:59 component.py
+#10 0.193 -rw-r--r-- 1 root root  3984 May 26 18:59 config.py
+#10 0.193 -rw-r--r-- 1 root root   580 May 26 18:59 eventloop.py
+#10 0.193 -rw-r--r-- 1 root root  4801 May 26 18:59 factory.py
+#10 0.193 drwxr-xr-x 3 root root  4096 May 26 18:59 frontend
+#10 0.193 -rw-r--r-- 1 root root  8174 May 26 18:59 mix.py
+#10 0.193 -rw-r--r-- 1 root root  3900 May 26 18:59 models.py
+#10 0.193 -rw-r--r-- 1 root root  7899 May 26 18:59 process.py
+#10 0.193 -rw-r--r-- 1 root root  2922 May 26 18:59 receive.py
+#10 0.193 -rw-r--r-- 1 root root   614 May 26 18:59 relay.py
+#10 0.193 -rw-r--r-- 1 root root   851 May 26 18:59 session_info.py
+#10 0.193 -rw-r--r-- 1 root root 20644 May 26 18:59 webrtc.py
 #10 DONE 0.2s
 
 #11 [seamless_st 7/8] RUN echo "--- Attempting to import AudioRecorder from streamlit_webrtc ---" &&     python -c "from streamlit_webrtc import AudioRecorder; print('AudioRecorder import successful!')"
-#11 0.171 --- Attempting to import AudioRecorder from streamlit_webrtc ---
-#11 0.589 2025-05-26 15:46:22.188 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
-#11 0.597 2025-05-26 15:46:22.194 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
-#11 0.597 2025-05-26 15:46:22.195 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
-#11 0.648 2025-05-26 15:46:22.246 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
-#11 0.651 Traceback (most recent call last):
-#11 0.651   File "<string>", line 1, in <module>
-#11 0.651 ImportError: cannot import name 'AudioRecorder' from 'streamlit_webrtc' (/usr/local/lib/python3.10/site-packages/streamlit_webrtc/__init__.py)
+#11 0.162 --- Attempting to import AudioRecorder from streamlit_webrtc ---
+#11 0.499 Traceback (most recent call last):
+#11 0.499   File "<string>", line 1, in <module>
+#11 0.499   File "/usr/local/lib/python3.10/site-packages/streamlit_webrtc/__init__.py", line 10, in <module>
+#11 0.499     from .component import (
+#11 0.499   File "/usr/local/lib/python3.10/site-packages/streamlit_webrtc/component.py", line 27, in <module>
+#11 0.499     from .session_info import get_this_session_info
+#11 0.499   File "/usr/local/lib/python3.10/site-packages/streamlit_webrtc/session_info.py", line 1, in <module>
+#11 0.499     import streamlit.report_thread as ReportThread
+#11 0.499 ModuleNotFoundError: No module named 'streamlit.report_thread'
 #11 ERROR: process "/bin/sh -c echo \"--- Attempting to import AudioRecorder from streamlit_webrtc ---\" &&     python -c \"from streamlit_webrtc import AudioRecorder; print('AudioRecorder import successful!')\"" did not complete successfully: exit code: 1
 ------
  > [seamless_st 7/8] RUN echo "--- Attempting to import AudioRecorder from streamlit_webrtc ---" &&     python -c "from streamlit_webrtc import AudioRecorder; print('AudioRecorder import successful!')":
-0.171 --- Attempting to import AudioRecorder from streamlit_webrtc ---
-0.589 2025-05-26 15:46:22.188 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
-0.597 2025-05-26 15:46:22.194 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
-0.597 2025-05-26 15:46:22.195 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
-0.648 2025-05-26 15:46:22.246 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
-0.651 Traceback (most recent call last):
-0.651   File "<string>", line 1, in <module>
-0.651 ImportError: cannot import name 'AudioRecorder' from 'streamlit_webrtc' (/usr/local/lib/python3.10/site-packages/streamlit_webrtc/__init__.py)
+0.162 --- Attempting to import AudioRecorder from streamlit_webrtc ---
+0.499 Traceback (most recent call last):
+0.499   File "<string>", line 1, in <module>
+0.499   File "/usr/local/lib/python3.10/site-packages/streamlit_webrtc/__init__.py", line 10, in <module>
+0.499     from .component import (
+0.499   File "/usr/local/lib/python3.10/site-packages/streamlit_webrtc/component.py", line 27, in <module>
+0.499     from .session_info import get_this_session_info
+0.499   File "/usr/local/lib/python3.10/site-packages/streamlit_webrtc/session_info.py", line 1, in <module>
+0.499     import streamlit.report_thread as ReportThread
+0.499 ModuleNotFoundError: No module named 'streamlit.report_thread'
 ------
 failed to solve: process "/bin/sh -c echo \"--- Attempting to import AudioRecorder from streamlit_webrtc ---\" &&     python -c \"from streamlit_webrtc import AudioRecorder; print('AudioRecorder import successful!')\"" did not complete successfully: exit code: 1
