@@ -275,8 +275,16 @@ async def text_to_speech(request: TTSRequest):
                         audio_numpy = audio_waveform.numpy()
                     else:
                         audio_numpy = np.array(audio_waveform)
+
+                    # Ensure correct dtype
+                    print(
+                        f"[TTS] Original numpy array dtype: {audio_numpy.dtype}")
+                    audio_numpy = audio_numpy.astype(np.float32)
+                    print(
+                        f"[TTS] Converted numpy array dtype: {audio_numpy.dtype}")
+
                     print(f"[TTS] Converting numpy array to tensor")
-                    audio_waveform = torch.from_numpy(audio_numpy).float()
+                    audio_waveform = torch.from_numpy(audio_numpy)
 
                 # Ensure we're on the right device
                 if torch.cuda.is_available():
