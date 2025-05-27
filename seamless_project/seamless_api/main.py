@@ -255,10 +255,26 @@ async def text_to_speech(request: TTSRequest):
             # Handle BatchedSpeechOutput
             if hasattr(audio_waveform, 'audio'):
                 print(f"[TTS] Converting BatchedSpeechOutput to tensor")
-                audio_waveform = audio_waveform.audio
+                print(
+                    f"[TTS] BatchedSpeechOutput type: {type(audio_waveform)}")
+                print(
+                    f"[TTS] BatchedSpeechOutput attributes: {dir(audio_waveform)}")
+
+                # Try to get the audio data
+                if hasattr(audio_waveform, 'audio'):
+                    audio_waveform = audio_waveform.audio
+                    print(
+                        f"[TTS] Audio attribute type: {type(audio_waveform)}")
+                    print(
+                        f"[TTS] Audio attribute shape: {audio_waveform.shape if hasattr(audio_waveform, 'shape') else 'No shape'}")
+
+                # If it's a list, take the first item
                 if isinstance(audio_waveform, list):
-                    # Take first item if it's a list
+                    print(f"[TTS] Audio is a list, taking first item")
                     audio_waveform = audio_waveform[0]
+                    print(f"[TTS] First item type: {type(audio_waveform)}")
+                    print(
+                        f"[TTS] First item shape: {audio_waveform.shape if hasattr(audio_waveform, 'shape') else 'No shape'}")
 
             if audio_waveform is None:
                 raise HTTPException(
@@ -272,12 +288,16 @@ async def text_to_speech(request: TTSRequest):
                 if not isinstance(audio_waveform, torch.Tensor):
                     print(f"[TTS] Converting to numpy array first")
                     if hasattr(audio_waveform, 'numpy'):
+                        print(f"[TTS] Using numpy() method")
                         audio_numpy = audio_waveform.numpy()
                     elif hasattr(audio_waveform, 'detach'):
-                        # If it's a tensor-like object with detach method
+                        print(f"[TTS] Using detach().cpu().numpy()")
                         audio_numpy = audio_waveform.detach().cpu().numpy()
+                    elif hasattr(audio_waveform, 'cpu'):
+                        print(f"[TTS] Using cpu().numpy()")
+                        audio_numpy = audio_waveform.cpu().numpy()
                     else:
-                        # Try to convert directly to numpy
+                        print(f"[TTS] Using direct numpy conversion")
                         audio_numpy = np.array(audio_waveform)
 
                     # Ensure correct dtype
@@ -286,6 +306,7 @@ async def text_to_speech(request: TTSRequest):
                     audio_numpy = audio_numpy.astype(np.float32)
                     print(
                         f"[TTS] Converted numpy array dtype: {audio_numpy.dtype}")
+                    print(f"[TTS] Numpy array shape: {audio_numpy.shape}")
 
                     print(f"[TTS] Converting numpy array to tensor")
                     audio_waveform = torch.from_numpy(audio_numpy)

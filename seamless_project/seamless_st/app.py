@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from streamlit_webrtc import webrtc_streamer
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import av
 import numpy as np
 import queue
@@ -92,7 +92,7 @@ def asr_audio_frame_callback(frame):
 # WebRTC streamer for audio recording
 webrtc_ctx = webrtc_streamer(
     key="translate_audio",
-    mode="recording",  # Using string value for version 0.47.1
+    mode=WebRtcMode.RECVONLY,  # Using RECVONLY for audio recording
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [
@@ -261,39 +261,38 @@ if st.button("Generate Speech", key='tts_generate_button'):
     else:
         payload = {
             "text": tts_text_input,
-            "source_language": tts_source_language,  # Added source language
+            "source_language": tts_source_language,
             "target_language": tts_target_language
         }
         try:
-            st.info("Generating speech, please wait...")
-            # The /tts endpoint returns the audio file directly in the response body
-            # Increased timeout for potentially long generation
-            tts_response = requests.post(
-                f"{API_URL}/tts", json=payload, timeout=120)
+            with st.spinner("Generating speech, please wait..."):
+                # The /tts endpoint returns the audio file directly in the response body
+                tts_response = requests.post(
+                    f"{API_URL}/tts", json=payload, timeout=120)
 
-            if tts_response.status_code == 200:
-                audio_content_bytes = tts_response.content  # Raw bytes of the WAV file
+                if tts_response.status_code == 200:
+                    audio_content_bytes = tts_response.content
 
-                if tts_output_option == "Play audio":
-                    st.audio(audio_content_bytes,
-                             format="audio/wav", start_time=0)
-                    st.success("Speech generated successfully!")
-                elif tts_output_option == "Download WAV":
-                    st.download_button(
-                        label="Download WAV",
-                        data=audio_content_bytes,
-                        file_name="tts_output.wav",
-                        mime="audio/wav"
-                    )
-                    st.success(
-                        "Speech generated! Click the button above to download.")
-            else:
-                try:
-                    error_detail = tts_response.json().get("detail", tts_response.text)
-                except ValueError:  # If response is not JSON
-                    error_detail = tts_response.text
-                st.error(
-                    f"TTS Generation Error: {tts_response.status_code} - {error_detail}")
+                    if tts_output_option == "Play audio":
+                        st.audio(audio_content_bytes,
+                                 format="audio/wav", start_time=0)
+                        st.success("Speech generated successfully!")
+                    elif tts_output_option == "Download WAV":
+                        st.download_button(
+                            label="Download WAV",
+                            data=audio_content_bytes,
+                            file_name="tts_output.wav",
+                            mime="audio/wav"
+                        )
+                        st.success(
+                            "Speech generated! Click the button above to download.")
+                else:
+                    try:
+                        error_detail = tts_response.json().get("detail", tts_response.text)
+                    except ValueError:  # If response is not JSON
+                        error_detail = tts_response.text
+                    st.error(
+                        f"TTS Generation Error: {tts_response.status_code} - {error_detail}")
 
         except requests.exceptions.Timeout:
             st.error(
@@ -312,7 +311,7 @@ st.header("Speech-to-Text (STT/ASR Transcription)")
 st.subheader("Record Audio for Transcription")
 asr_webrtc_ctx = webrtc_streamer(
     key="asr_audio_recorder",
-    mode="recording",  # Using string value for version 0.47.1
+    mode=WebRtcMode.RECVONLY,  # Using RECVONLY for audio recording
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [
