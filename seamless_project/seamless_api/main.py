@@ -57,8 +57,6 @@ async def load_model_on_startup():
         vocoder_identifier = "vocoder_v2"
 
         # Load the translator model
-        # The 'model_name' (identifier) and 'vocoder_name' (identifier) are typically passed
-        # as the first and second POSITIONAL arguments.
         translator_instance = Translator(
             model_identifier,    # First positional argument: model name/identifier
             vocoder_identifier,  # Second positional argument: vocoder name/identifier
@@ -71,9 +69,6 @@ async def load_model_on_startup():
 
     except Exception as e:
         print(f"Error loading model: {e}")
-        # Depending on policy, you might want to raise the exception
-        # or allow the app to start without the model for some endpoints.
-        # For now, we'll let it start and log the error.
         model_translator = None 
 
 @app.get("/")
@@ -86,18 +81,7 @@ async def root():
     else:
         return {"message": "Seamless API is running. Model FAILED to load."}
 
-# Placeholder for future endpoints that will use the model_translator
-# For example:
-# @app.post("/translate_speech_to_text")
-# async def translate_s2t(audio_file: UploadFile = File(...)):
-#     if not model_translator:
-#         raise HTTPException(status_code=503, detail="Model not loaded")
-#     # ... implementation ...
-#     pass
-
 if __name__ == "__main__":
-    # This part is for local development/testing if not using Uvicorn directly via CMD
-    # The Dockerfile CMD uses: ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
@@ -115,21 +99,18 @@ async def speech_to_text(audio_file: UploadFile = File(...)):
 
     temp_audio_path = None
     try:
-        # Save uploaded audio file to a temporary path
-        # Using .wav for consistency, but Seamless might handle others
         fd, temp_audio_path = tempfile.mkstemp(suffix=".wav") 
-        os.close(fd) # Close descriptor, open with 'wb'
+        os.close(fd) 
 
         with open(temp_audio_path, "wb") as buffer:
             shutil.copyfileobj(audio_file.file, buffer)
         
         print(f"Received STT request: Saved uploaded audio to temporary file: {temp_audio_path}")
 
-        # The model requires `tgt_lang` even for s2t_transcript, but the detected language is returned.
         transcribed_text, detected_language_code, _, _ = model_translator.predict(
             input=temp_audio_path,
-            task_str="s2t_transcript", # Speech-to-Text (transcript)
-            tgt_lang="eng" # A required target language for the model's output, but not the source detection.
+            task_str="s2t_transcript", # Speech-to-Text (transcript) - This is correct for 4 returns
+            tgt_lang="eng" 
         )
 
         if transcribed_text is None or detected_language_code is None:
@@ -145,7 +126,6 @@ async def speech_to_text(audio_file: UploadFile = File(...)):
         print(f"Error during STT processing: {e}")
         raise HTTPException(status_code=500, detail=f"STT processing failed: {str(e)}")
     finally:
-        # Clean up the temporary audio file
         if temp_audio_path and os.path.exists(temp_audio_path):
             try:
                 os.remove(temp_audio_path)
@@ -167,21 +147,28 @@ async def translate_text(request: TranslationRequest):
     try:
         print(f"Received Translation request: Text='{request.text}', Source='{request.source_language}', Target='{request.target_language}'")
         
-        # --- FIX APPLIED HERE ---
-        # Changed task_str from "t2tt_text" to "t2tt"
-        translated_text, _, _, _ = model_translator.predict(
+        # CORRECTED UNPACKING: Expecting 2 values for 't2tt' task
+        translated_text_raw, _ = model_translator.predict(
             input=request.text,
-            task_str="t2tt", # CORRECTED TASK STRING for Text-to-Text Translation
+            task_str="t2tt", 
             src_lang=request.source_language,
             tgt_lang=request.target_language
         )
 
-        if translated_text is None:
+        if translated_text_raw is None:
             raise HTTPException(status_code=500, detail="Model failed to translate text.")
 
-        print(f"Translated text: '{translated_text}'")
+        # --- NEW FIX APPLIED HERE ---
+        # Extract the string from the list and ensure it's a standard Python string
+        if isinstance(translated_text_raw, list) and len(translated_text_raw) > 0:
+            final_translated_text = str(translated_text_raw[0])
+        else:
+            # Fallback for unexpected cases, but the error implies it will be a list
+            final_translated_text = str(translated_text_raw)
+
+        print(f"Translated text: '{final_translated_text}'")
         
-        return TranslationResponse(translated_text=translated_text)
+        return TranslationResponse(translated_text=final_translated_text)
 
     except HTTPException as e_http:
         raise e_http
@@ -205,7 +192,7 @@ async def text_to_speech(request: TTSRequest):
         
         output_text, audio_waveform, audio_sample_rate = model_translator.predict(
             input=request.text,
-            task_str="t2st_sync", # Text-to-Speech (and Text) - This task string is correct
+            task_str="t2st_sync", 
             tgt_lang=request.target_language,
         )
 
@@ -247,7 +234,4 @@ async def text_to_speech(request: TTSRequest):
         raise e_http
     except Exception as e:
         print(f"Error during TTS generation: {e}")
-        # Attempt to clean up temp file if it was created before the error in predict or saving
-        # This specific location might not always have temp_audio_path defined if error is early
-        # Consider moving cleanup to a broader finally block if needed, though the save block has one.
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
