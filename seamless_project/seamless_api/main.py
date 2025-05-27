@@ -267,12 +267,34 @@ async def text_to_speech(request: TTSRequest):
 
             print(f"[TTS] Processing audio data...")
             try:
-                audio_data_cpu = audio_waveform.cpu()
-                if audio_data_cpu.ndim == 1:
+                # Ensure we have a tensor
+                if not isinstance(audio_waveform, torch.Tensor):
+                    print(f"[TTS] Converting audio_waveform to tensor")
+                    audio_waveform = torch.tensor(audio_waveform, device=audio_waveform.device if hasattr(
+                        audio_waveform, 'device') else 'cuda')
+
+                # Add channel dimension if needed (while keeping on GPU)
+                if audio_waveform.ndim == 1:
                     print(f"[TTS] Adding channel dimension to audio data")
-                    audio_data_cpu = audio_data_cpu.unsqueeze(0)
+                    audio_waveform = audio_waveform.unsqueeze(0)
+
+                print(f"[TTS] Audio data shape: {audio_waveform.shape}")
+                print(f"[TTS] Audio data type: {audio_waveform.dtype}")
+                print(f"[TTS] Audio data device: {audio_waveform.device}")
+
+                # Only move to CPU when saving to file
+                print(f"[TTS] Moving audio data to CPU for saving...")
+                audio_data_cpu = audio_waveform.cpu()
+
             except Exception as e:
                 print(f"[TTS] Error processing audio data: {e}")
+                print(f"[TTS] Audio waveform type: {type(audio_waveform)}")
+                if hasattr(audio_waveform, 'shape'):
+                    print(
+                        f"[TTS] Audio waveform shape: {audio_waveform.shape}")
+                if hasattr(audio_waveform, 'device'):
+                    print(
+                        f"[TTS] Audio waveform device: {audio_waveform.device}")
                 raise HTTPException(
                     status_code=500,
                     detail=f"Failed to process audio data: {str(e)}"
