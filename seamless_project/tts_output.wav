@@ -1,1 +1,1 @@
-{"detail":"TTS generation failed: 'BatchedSpeechOutput' object has no attribute 'shape'"}
+{"detail":"TTS generation failed: 500: Failed to process audio data: 'BatchedSpeechOutput' object has no attribute 'cpu'"}
