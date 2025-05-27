@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from streamlit_webrtc import webrtc_streamer
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import av
 import numpy as np
 import queue
@@ -80,8 +80,8 @@ def asr_audio_frame_callback(frame):
 
 # WebRTC streamer for audio recording
 webrtc_ctx = webrtc_streamer(
-    key="translation_audio_recorder",
-    mode="recording",
+    key="translate_audio",
+    mode=WebRtcMode.RECORDING,
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [
@@ -291,7 +291,7 @@ st.header("Speech-to-Text (STT/ASR Transcription)")
 st.subheader("Record Audio for Transcription")
 asr_webrtc_ctx = webrtc_streamer(
     key="asr_audio_recorder",
-    mode="recording",
+    mode=WebRtcMode.RECORDING,
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [
