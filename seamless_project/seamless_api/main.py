@@ -273,7 +273,11 @@ async def text_to_speech(request: TTSRequest):
                     print(f"[TTS] Converting to numpy array first")
                     if hasattr(audio_waveform, 'numpy'):
                         audio_numpy = audio_waveform.numpy()
+                    elif hasattr(audio_waveform, 'detach'):
+                        # If it's a tensor-like object with detach method
+                        audio_numpy = audio_waveform.detach().cpu().numpy()
                     else:
+                        # Try to convert directly to numpy
                         audio_numpy = np.array(audio_waveform)
 
                     # Ensure correct dtype
