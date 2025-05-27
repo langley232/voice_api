@@ -219,7 +219,7 @@ async def text_to_speech(request: TTSRequest):
         try:
             output_text, audio_waveform, audio_sample_rate = model_translator.predict(
                 input=request.text,
-                task_str="t2st",  # Changed back to t2st as it's the correct task for TTS
+                task_str="t2s",  # Using t2s for pure text-to-speech
                 tgt_lang=request.target_language,
             )
             print(f"[TTS] Model prediction completed:")
