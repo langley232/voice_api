@@ -250,10 +250,64 @@ async def text_to_speech(request: TTSRequest):
             print(f"[TTS] Output text type: {type(output_text)}")
             print(f"[TTS] Audio waveform type: {type(audio_waveform)}")
             print(f"[TTS] Audio sample rate: {audio_sample_rate}")
-            if audio_waveform is not None:
-                print(f"[TTS] Audio waveform shape: {audio_waveform.shape}")
-                print(f"[TTS] Audio waveform device: {audio_waveform.device}")
-                print(f"[TTS] Audio waveform dtype: {audio_waveform.dtype}")
+
+            # Handle BatchedSpeechOutput
+            if hasattr(audio_waveform, 'audio'):
+                print(f"[TTS] Converting BatchedSpeechOutput to tensor")
+                audio_waveform = audio_waveform.audio
+                if isinstance(audio_waveform, list):
+                    # Take first item if it's a list
+                    audio_waveform = audio_waveform[0]
+
+            if audio_waveform is None:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Model failed to generate audio waveform"
+                )
+
+            print(f"[TTS] Processing audio data...")
+            try:
+                audio_data_cpu = audio_waveform.cpu()
+                if audio_data_cpu.ndim == 1:
+                    print(f"[TTS] Adding channel dimension to audio data")
+                    audio_data_cpu = audio_data_cpu.unsqueeze(0)
+            except Exception as e:
+                print(f"[TTS] Error processing audio data: {e}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to process audio data: {str(e)}"
+                )
+
+            fd, temp_audio_path = tempfile.mkstemp(suffix=".wav")
+            os.close(fd)
+            print(f"[TTS] Created temporary file: {temp_audio_path}")
+
+            try:
+                print(f"[TTS] Saving audio to file...")
+                torchaudio.save(
+                    temp_audio_path,
+                    audio_data_cpu,
+                    audio_sample_rate
+                )
+                print(f"[TTS] Successfully saved audio to: {temp_audio_path}")
+
+                response = FileResponse(
+                    temp_audio_path,
+                    media_type="audio/wav",
+                    filename="tts_output.wav",
+                    background=BackgroundTask(os.remove, temp_audio_path)
+                )
+                print(f"[TTS] Successfully created FileResponse")
+                return response
+
+            except Exception as e_save:
+                print(f"[TTS] Error saving audio to file:")
+                print(f"[TTS] Error type: {type(e_save)}")
+                print(f"[TTS] Error message: {str(e_save)}")
+                if os.path.exists(temp_audio_path):
+                    os.remove(temp_audio_path)
+                raise HTTPException(
+                    status_code=500, detail=f"Failed to save generated audio: {str(e_save)}")
 
         except Exception as predict_error:
             print(f"[TTS] Error during model prediction:")
@@ -265,51 +319,6 @@ async def text_to_speech(request: TTSRequest):
                 status_code=500,
                 detail=f"TTS generation failed: {str(predict_error)}"
             )
-
-        if audio_waveform is None or audio_sample_rate is None:
-            print(f"[TTS] Model returned None values:")
-            print(f"[TTS] Audio waveform is None: {audio_waveform is None}")
-            print(
-                f"[TTS] Audio sample rate is None: {audio_sample_rate is None}")
-            raise HTTPException(
-                status_code=500, detail="Model failed to generate audio.")
-
-        print(f"[TTS] Processing audio data...")
-        audio_data_cpu = audio_waveform.cpu()
-        if audio_data_cpu.ndim == 1:
-            print(f"[TTS] Adding channel dimension to audio data")
-            audio_data_cpu = audio_data_cpu.unsqueeze(0)
-
-        fd, temp_audio_path = tempfile.mkstemp(suffix=".wav")
-        os.close(fd)
-        print(f"[TTS] Created temporary file: {temp_audio_path}")
-
-        try:
-            print(f"[TTS] Saving audio to file...")
-            torchaudio.save(
-                temp_audio_path,
-                audio_data_cpu,
-                audio_sample_rate
-            )
-            print(f"[TTS] Successfully saved audio to: {temp_audio_path}")
-
-            response = FileResponse(
-                temp_audio_path,
-                media_type="audio/wav",
-                filename="tts_output.wav",
-                background=BackgroundTask(os.remove, temp_audio_path)
-            )
-            print(f"[TTS] Successfully created FileResponse")
-            return response
-
-        except Exception as e_save:
-            print(f"[TTS] Error saving audio to file:")
-            print(f"[TTS] Error type: {type(e_save)}")
-            print(f"[TTS] Error message: {str(e_save)}")
-            if os.path.exists(temp_audio_path):
-                os.remove(temp_audio_path)
-            raise HTTPException(
-                status_code=500, detail=f"Failed to save generated audio: {str(e_save)}")
 
     except HTTPException as e_http:
         print(f"[TTS] HTTP Exception raised:")

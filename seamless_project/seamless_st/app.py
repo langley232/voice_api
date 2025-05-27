@@ -61,27 +61,38 @@ if 'asr_audio_data' not in st.session_state:
 
 
 def translation_audio_frame_callback(frame):
-    if frame is not None:
-        # Convert frame to numpy array
-        audio = frame.to_ndarray()
-        # Store in session state
-        st.session_state.audio_data = audio
-    return frame
+    try:
+        if frame is not None:
+            # Convert frame to numpy array
+            audio = frame.to_ndarray()
+            # Store in session state
+            st.session_state.audio_data = audio
+            print(
+                f"[Translation] Received audio frame of shape: {audio.shape}")
+        return frame
+    except Exception as e:
+        print(f"[Translation] Error in audio frame callback: {e}")
+        return frame
 
 
 def asr_audio_frame_callback(frame):
-    if frame is not None:
-        # Convert frame to numpy array
-        audio = frame.to_ndarray()
-        # Store in session state
-        st.session_state.asr_audio_data = audio
-    return frame
+    try:
+        if frame is not None:
+            # Convert frame to numpy array
+            audio = frame.to_ndarray()
+            # Store in session state
+            st.session_state.asr_audio_data = audio
+            print(f"[ASR] Received audio frame of shape: {audio.shape}")
+        return frame
+    except Exception as e:
+        print(f"[ASR] Error in audio frame callback: {e}")
+        return frame
 
 
 # WebRTC streamer for audio recording
 webrtc_ctx = webrtc_streamer(
     key="translate_audio",
-    mode=WebRtcMode.RECORDING,
+    mode="recording",  # Using string value instead of enum
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [
@@ -219,10 +230,19 @@ st.header("Text-to-Speech (TTS)")
 tts_text_input = st.text_area(
     "Enter text for TTS:", key='tts_text', height=100)
 
+# Add source language selection
+tts_source_language_display = st.selectbox(
+    "Source Language of Text",
+    options=lang_display_names,
+    key='tts_source_lang_display',
+    index=0  # Default to English
+)
+tts_source_language = SUPPORTED_LANGUAGES[tts_source_language_display]
+
 # Use the same language selection as in Translation for consistency
 tts_target_language_display = st.selectbox(
     "Target Language for Speech",
-    options=lang_display_names,  # Defined in Translation section
+    options=lang_display_names,
     key='tts_target_lang_display',
     index=0  # Default to English
 )
@@ -241,7 +261,8 @@ if st.button("Generate Speech", key='tts_generate_button'):
     else:
         payload = {
             "text": tts_text_input,
-            "target_language": tts_target_language  # Use the code
+            "source_language": tts_source_language,  # Added source language
+            "target_language": tts_target_language
         }
         try:
             st.info("Generating speech, please wait...")
@@ -291,7 +312,7 @@ st.header("Speech-to-Text (STT/ASR Transcription)")
 st.subheader("Record Audio for Transcription")
 asr_webrtc_ctx = webrtc_streamer(
     key="asr_audio_recorder",
-    mode=WebRtcMode.RECORDING,
+    mode="recording",  # Using string value instead of enum
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [
