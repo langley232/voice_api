@@ -209,37 +209,65 @@ async def text_to_speech(request: TTSRequest):
 
     temp_audio_path = None
     try:
+        print(f"[TTS] Starting TTS generation with parameters:")
+        print(f"[TTS] Text: '{request.text}'")
+        print(f"[TTS] Target Language: '{request.target_language}'")
+        print(f"[TTS] Model translator type: {type(model_translator)}")
         print(
-            f"Received TTS request: Text='{request.text}', Target Language='{request.target_language}'")
+            f"[TTS] Available task strings: {model_translator.supported_tasks if hasattr(model_translator, 'supported_tasks') else 'Not available'}")
 
-        output_text, audio_waveform, audio_sample_rate = model_translator.predict(
-            input=request.text,
-            task_str="t2st",
-            tgt_lang=request.target_language,
-        )
+        try:
+            output_text, audio_waveform, audio_sample_rate = model_translator.predict(
+                input=request.text,
+                task_str="t2st",  # Changed back to t2st as it's the correct task for TTS
+                tgt_lang=request.target_language,
+            )
+            print(f"[TTS] Model prediction completed:")
+            print(f"[TTS] Output text type: {type(output_text)}")
+            print(f"[TTS] Audio waveform type: {type(audio_waveform)}")
+            print(f"[TTS] Audio sample rate: {audio_sample_rate}")
+            if audio_waveform is not None:
+                print(f"[TTS] Audio waveform shape: {audio_waveform.shape}")
+                print(f"[TTS] Audio waveform device: {audio_waveform.device}")
+                print(f"[TTS] Audio waveform dtype: {audio_waveform.dtype}")
+
+        except Exception as predict_error:
+            print(f"[TTS] Error during model prediction:")
+            print(f"[TTS] Error type: {type(predict_error)}")
+            print(f"[TTS] Error message: {str(predict_error)}")
+            print(
+                f"[TTS] Error details: {predict_error.__dict__ if hasattr(predict_error, '__dict__') else 'No additional details'}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"TTS generation failed: {str(predict_error)}"
+            )
 
         if audio_waveform is None or audio_sample_rate is None:
+            print(f"[TTS] Model returned None values:")
+            print(f"[TTS] Audio waveform is None: {audio_waveform is None}")
+            print(
+                f"[TTS] Audio sample rate is None: {audio_sample_rate is None}")
             raise HTTPException(
                 status_code=500, detail="Model failed to generate audio.")
 
-        print(
-            f"Generated audio: Waveform shape {audio_waveform.shape}, Sample rate {audio_sample_rate}")
-
+        print(f"[TTS] Processing audio data...")
         audio_data_cpu = audio_waveform.cpu()
         if audio_data_cpu.ndim == 1:
+            print(f"[TTS] Adding channel dimension to audio data")
             audio_data_cpu = audio_data_cpu.unsqueeze(0)
 
         fd, temp_audio_path = tempfile.mkstemp(suffix=".wav")
         os.close(fd)
+        print(f"[TTS] Created temporary file: {temp_audio_path}")
 
         try:
+            print(f"[TTS] Saving audio to file...")
             torchaudio.save(
                 temp_audio_path,
                 audio_data_cpu,
                 audio_sample_rate
             )
-            print(
-                f"Saved generated audio to temporary file: {temp_audio_path}")
+            print(f"[TTS] Successfully saved audio to: {temp_audio_path}")
 
             response = FileResponse(
                 temp_audio_path,
@@ -247,27 +275,37 @@ async def text_to_speech(request: TTSRequest):
                 filename="tts_output.wav",
                 background=BackgroundTask(os.remove, temp_audio_path)
             )
+            print(f"[TTS] Successfully created FileResponse")
             return response
 
         except Exception as e_save:
+            print(f"[TTS] Error saving audio to file:")
+            print(f"[TTS] Error type: {type(e_save)}")
+            print(f"[TTS] Error message: {str(e_save)}")
             if os.path.exists(temp_audio_path):
                 os.remove(temp_audio_path)
-            print(f"Error saving audio to file: {e_save}")
             raise HTTPException(
                 status_code=500, detail=f"Failed to save generated audio: {str(e_save)}")
 
     except HTTPException as e_http:
+        print(f"[TTS] HTTP Exception raised:")
+        print(f"[TTS] Status code: {e_http.status_code}")
+        print(f"[TTS] Detail: {e_http.detail}")
         raise e_http
     except Exception as e:
-        print(f"Error during TTS generation: {e}")
+        print(f"[TTS] Unexpected error during TTS generation:")
+        print(f"[TTS] Error type: {type(e)}")
+        print(f"[TTS] Error message: {str(e)}")
+        print(
+            f"[TTS] Error details: {e.__dict__ if hasattr(e, '__dict__') else 'No additional details'}")
         # Clean up temp file if it exists
         if temp_audio_path and os.path.exists(temp_audio_path):
             try:
                 os.remove(temp_audio_path)
                 print(
-                    f"Cleaned up temporary audio file after error: {temp_audio_path}")
+                    f"[TTS] Cleaned up temporary audio file after error: {temp_audio_path}")
             except Exception as e_cleanup:
                 print(
-                    f"Error cleaning up temporary file {temp_audio_path}: {e_cleanup}")
+                    f"[TTS] Error cleaning up temporary file {temp_audio_path}: {e_cleanup}")
         raise HTTPException(
             status_code=500, detail=f"TTS generation failed: {str(e)}")
