@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from streamlit_webrtc import webrtc_streamer, WebRtcStreamerContext
+from streamlit_webrtc import webrtc_streamer
 import av
 import numpy as np
 import queue
@@ -54,11 +54,13 @@ st.subheader("Record Audio to Translate")
 # Initialize session state for audio data if not exists
 if 'audio_data' not in st.session_state:
     st.session_state.audio_data = None
+if 'asr_audio_data' not in st.session_state:
+    st.session_state.asr_audio_data = None
 
-# Audio recording callback
+# Audio recording callbacks
 
 
-def audio_frame_callback(frame):
+def translation_audio_frame_callback(frame):
     if frame is not None:
         # Convert frame to numpy array
         audio = frame.to_ndarray()
@@ -67,15 +69,24 @@ def audio_frame_callback(frame):
     return frame
 
 
+def asr_audio_frame_callback(frame):
+    if frame is not None:
+        # Convert frame to numpy array
+        audio = frame.to_ndarray()
+        # Store in session state
+        st.session_state.asr_audio_data = audio
+    return frame
+
+
 # WebRTC streamer for audio recording
 webrtc_ctx = webrtc_streamer(
     key="translation_audio_recorder",
-    mode=WebRtcStreamerContext.MODE_RECORDING,
+    mode="recording",
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [
         {"urls": ["stun:stun.l.google.com:19302"]}]},
-    audio_frame_callback=audio_frame_callback,
+    audio_frame_callback=translation_audio_frame_callback,
 )
 
 # Process recorded audio when available
@@ -278,10 +289,14 @@ st.markdown("---")  # Visual separator
 st.header("Speech-to-Text (STT/ASR Transcription)")
 
 st.subheader("Record Audio for Transcription")
-asr_audio_bytes_recorder = WebRtcStreamerContext(
-    pause_threshold=2.0,
-    sample_rate=16000,
-    key='asr_audio_recorder'  # Unique key
+asr_webrtc_ctx = webrtc_streamer(
+    key="asr_audio_recorder",
+    mode="recording",
+    audio_receiver_size=1024,
+    media_stream_constraints={"video": False, "audio": True},
+    rtc_configuration={"iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]}]},
+    audio_frame_callback=asr_audio_frame_callback,
 )
 
 st.subheader("Or Upload an Audio File for Transcription")
@@ -295,10 +310,10 @@ asr_uploaded_file = st.file_uploader(
 final_asr_audio_bytes = None
 audio_source_message = None
 
-if asr_audio_bytes_recorder:
-    final_asr_audio_bytes = asr_audio_bytes_recorder
+if st.session_state.asr_audio_data is not None:
+    final_asr_audio_bytes = st.session_state.asr_audio_data.tobytes()
     st.info("Using audio from live recording.")
-    st.audio(final_asr_audio_bytes, format="audio/wav")
+    st.audio(st.session_state.asr_audio_data, format="audio/wav")
     audio_source_message = "from live recording"
 elif asr_uploaded_file:
     final_asr_audio_bytes = asr_uploaded_file.getvalue()
