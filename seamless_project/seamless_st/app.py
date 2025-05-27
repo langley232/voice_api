@@ -92,7 +92,7 @@ def asr_audio_frame_callback(frame):
 # WebRTC streamer for audio recording
 webrtc_ctx = webrtc_streamer(
     key="translate_audio",
-    mode=WebRtcMode.RECORDING,  # Using enum value
+    mode="recording",  # Using string value for version 0.47.1
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [
@@ -312,7 +312,7 @@ st.header("Speech-to-Text (STT/ASR Transcription)")
 st.subheader("Record Audio for Transcription")
 asr_webrtc_ctx = webrtc_streamer(
     key="asr_audio_recorder",
-    mode=WebRtcMode.RECORDING,  # Using enum value
+    mode="recording",  # Using string value for version 0.47.1
     audio_receiver_size=1024,
     media_stream_constraints={"video": False, "audio": True},
     rtc_configuration={"iceServers": [

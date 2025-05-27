@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask  # For cleanup
 from pydantic import BaseModel
 from seamless_communication.inference import Translator
+import numpy as np
 
 # Global variable to hold the model translator
 model_translator: Translator = None
@@ -267,13 +268,21 @@ async def text_to_speech(request: TTSRequest):
 
             print(f"[TTS] Processing audio data...")
             try:
-                # Ensure we have a tensor
+                # Convert to numpy array first if it's not already a tensor
                 if not isinstance(audio_waveform, torch.Tensor):
-                    print(f"[TTS] Converting audio_waveform to tensor")
-                    audio_waveform = torch.tensor(audio_waveform, device=audio_waveform.device if hasattr(
-                        audio_waveform, 'device') else 'cuda')
+                    print(f"[TTS] Converting to numpy array first")
+                    if hasattr(audio_waveform, 'numpy'):
+                        audio_numpy = audio_waveform.numpy()
+                    else:
+                        audio_numpy = np.array(audio_waveform)
+                    print(f"[TTS] Converting numpy array to tensor")
+                    audio_waveform = torch.from_numpy(audio_numpy).float()
 
-                # Add channel dimension if needed (while keeping on GPU)
+                # Ensure we're on the right device
+                if torch.cuda.is_available():
+                    audio_waveform = audio_waveform.cuda()
+
+                # Add channel dimension if needed
                 if audio_waveform.ndim == 1:
                     print(f"[TTS] Adding channel dimension to audio data")
                     audio_waveform = audio_waveform.unsqueeze(0)
@@ -295,6 +304,9 @@ async def text_to_speech(request: TTSRequest):
                 if hasattr(audio_waveform, 'device'):
                     print(
                         f"[TTS] Audio waveform device: {audio_waveform.device}")
+                if hasattr(audio_waveform, 'dtype'):
+                    print(
+                        f"[TTS] Audio waveform dtype: {audio_waveform.dtype}")
                 raise HTTPException(
                     status_code=500,
                     detail=f"Failed to process audio data: {str(e)}"
