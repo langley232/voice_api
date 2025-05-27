@@ -17,6 +17,7 @@ model_translator: Translator = None
 
 class TTSRequest(BaseModel):
     text: str
+    source_language: str  # Added source language parameter
     target_language: str  # e.g., 'eng', 'spa', 'fra'
 
 
@@ -211,6 +212,7 @@ async def text_to_speech(request: TTSRequest):
     try:
         print(f"[TTS] Starting TTS generation with parameters:")
         print(f"[TTS] Text: '{request.text}'")
+        print(f"[TTS] Source Language: '{request.source_language}'")
         print(f"[TTS] Target Language: '{request.target_language}'")
         print(f"[TTS] Model translator type: {type(model_translator)}")
         print(
@@ -219,7 +221,8 @@ async def text_to_speech(request: TTSRequest):
         try:
             output_text, audio_waveform, audio_sample_rate = model_translator.predict(
                 input=request.text,
-                task_str="t2s",  # Using t2s for pure text-to-speech
+                task_str="t2st",  # Using t2st for text-to-speech-and-text
+                src_lang=request.source_language,  # Added source language
                 tgt_lang=request.target_language,
             )
             print(f"[TTS] Model prediction completed:")
