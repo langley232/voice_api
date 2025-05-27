@@ -20,10 +20,10 @@ RUN echo "--- Inspecting streamlit_webrtc installation directory ---" && \
     ls -l "${SITE_PACKAGES_PATH}/streamlit_webrtc" || \
     echo "streamlit_webrtc directory not found in site-packages!"
 
-# 3. Attempt to import AudioProcessor directly during the build
+# 3. Attempt to import webrtc_streamer directly during the build
 # This will cause the build to fail if the module cannot be imported, providing early feedback.
-RUN echo "--- Attempting to import AudioProcessor from streamlit_webrtc ---" && \
-    python -c "from streamlit_webrtc import AudioProcessor; print('AudioProcessor import successful!')"
+RUN echo "--- Attempting to import webrtc_streamer from streamlit_webrtc ---" && \
+    python -c "from streamlit_webrtc import webrtc_streamer; print('webrtc_streamer import successful!')"
 # --- DEBUGGING STEPS END ---
 
 # Copy all files from the build context (seamless_st/) into the container's /app
@@ -31,4 +31,5 @@ COPY . .
 
 # Command to run your Streamlit application
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
 

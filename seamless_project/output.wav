@@ -1,1 +1,0 @@
-{"detail":[{"type":"missing","loc":["body","target_language"],"msg":"Field required","input":{"text":"Hello, how are you today?","speaker_id":0}}]}

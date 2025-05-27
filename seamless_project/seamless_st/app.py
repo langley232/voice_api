@@ -1,6 +1,10 @@
 import streamlit as st
 import requests
-from streamlit_webrtc import AudioProcessor  # Using AudioProcessor as planned
+from streamlit_webrtc import webrtc_streamer, WebRtcStreamerContext
+import av
+import numpy as np
+import queue
+import threading
 
 # API URL (assuming Docker Compose networking)
 API_URL = "http://seamless_api:8000"
@@ -44,32 +48,50 @@ with col2:
     )
     target_language = SUPPORTED_LANGUAGES[target_language_display]
 
-
 # Audio Input
 st.subheader("Record Audio to Translate")
-# The AudioProcessor returns audio bytes when the recording is stopped.
-# sample_rate should match the model's expected input (typically 16000 Hz for speech models)
-# pause_threshold determines how long silence is tolerated before stopping.
-audio_bytes = AudioProcessor(
-    pause_threshold=2.0,
-    sample_rate=16000,
-    key='translation_audio_recorder',  # Added explicit unique key
-    # energy_threshold=(-1.0, 0.1), # Example, might need tuning
-    # neutral_color="#f0f2f6" # Default Streamlit widget color
+
+# Initialize session state for audio data if not exists
+if 'audio_data' not in st.session_state:
+    st.session_state.audio_data = None
+
+# Audio recording callback
+
+
+def audio_frame_callback(frame):
+    if frame is not None:
+        # Convert frame to numpy array
+        audio = frame.to_ndarray()
+        # Store in session state
+        st.session_state.audio_data = audio
+    return frame
+
+
+# WebRTC streamer for audio recording
+webrtc_ctx = webrtc_streamer(
+    key="translation_audio_recorder",
+    mode=WebRtcStreamerContext.MODE_RECORDING,
+    audio_receiver_size=1024,
+    media_stream_constraints={"video": False, "audio": True},
+    rtc_configuration={"iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]}]},
+    audio_frame_callback=audio_frame_callback,
 )
 
-transcribed_text_from_audio = None  # To store STT result
+# Process recorded audio when available
+if st.session_state.audio_data is not None:
+    st.audio(st.session_state.audio_data, format="audio/wav")
 
-if audio_bytes:
-    st.audio(audio_bytes, format="audio/wav", start_time=0)
-    # Automatically try to transcribe if new audio is recorded
+    # Convert numpy array to bytes for API request
+    audio_bytes = st.session_state.audio_data.tobytes()
+
     if st.button("Transcribe Recorded Audio", key="transcribe_button_audio"):
         files = {'audio_file': ('recorded_audio.wav',
                                 audio_bytes, 'audio/wav')}
         try:
             st.info("Transcribing audio...")
             stt_response = requests.post(
-                f"{API_URL}/stt", files=files, timeout=60)  # Increased timeout
+                f"{API_URL}/stt", files=files, timeout=60)
             if stt_response.status_code == 200:
                 stt_data = stt_response.json()
                 transcribed_text_from_audio = stt_data.get('text')
@@ -91,24 +113,17 @@ if audio_bytes:
                 # Update source language if different from current selection and detected
                 if source_language != detected_lang_code and detected_lang_code in lang_codes:
                     st.session_state.translate_source_lang_display = detected_lang_display
-                    source_language = detected_lang_code  # update for immediate use
+                    source_language = detected_lang_code
                     st.info(
                         f"Source language automatically updated to: {detected_lang_display}")
-                    # Rerun to update selectbox display (Streamlit's way)
-                    # This might cause a flicker or require careful state management
-                    # For now, just updating the variable used in logic. A full rerun can be forced if needed.
 
             else:
                 st.error(
                     f"STT Error: {stt_response.status_code} - {stt_response.text}")
-                transcribed_text_from_audio = None
         except requests.exceptions.RequestException as e:
             st.error(f"STT Request failed: {e}")
-            transcribed_text_from_audio = None
         except Exception as e_gen:
             st.error(f"An unexpected error occurred during STT: {e_gen}")
-            transcribed_text_from_audio = None
-
 
 # Text Input (Alternative)
 st.subheader("Or Type Text to Translate")
@@ -263,7 +278,7 @@ st.markdown("---")  # Visual separator
 st.header("Speech-to-Text (STT/ASR Transcription)")
 
 st.subheader("Record Audio for Transcription")
-asr_audio_bytes_recorder = AudioProcessor(
+asr_audio_bytes_recorder = WebRtcStreamerContext(
     pause_threshold=2.0,
     sample_rate=16000,
     key='asr_audio_recorder'  # Unique key
