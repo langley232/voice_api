@@ -219,12 +219,33 @@ async def text_to_speech(request: TTSRequest):
             f"[TTS] Available task strings: {model_translator.supported_tasks if hasattr(model_translator, 'supported_tasks') else 'Not available'}")
 
         try:
-            output_text, audio_waveform, audio_sample_rate = model_translator.predict(
+            result = model_translator.predict(
                 input=request.text,
-                task_str="t2st",  # Using t2st for text-to-speech-and-text
-                src_lang=request.source_language,  # Added source language
+                task_str="t2st",
+                src_lang=request.source_language,
                 tgt_lang=request.target_language,
             )
+            print(f"[TTS] Model prediction result type: {type(result)}")
+            print(f"[TTS] Model prediction result: {result}")
+
+            # Handle different return types
+            if isinstance(result, tuple):
+                if len(result) == 3:
+                    output_text, audio_waveform, audio_sample_rate = result
+                elif len(result) == 2:
+                    output_text, audio_waveform = result
+                    audio_sample_rate = 16000  # Default sample rate for Seamless M4T
+                else:
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Unexpected number of return values from model: {len(result)}"
+                    )
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Unexpected return type from model: {type(result)}"
+                )
+
             print(f"[TTS] Model prediction completed:")
             print(f"[TTS] Output text type: {type(output_text)}")
             print(f"[TTS] Audio waveform type: {type(audio_waveform)}")
