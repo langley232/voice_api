@@ -262,125 +262,91 @@ async def text_to_speech(request: TTSRequest):
 
                 # Get the audio data from BatchedSpeechOutput
                 audio_waveform = audio_waveform.audio
-                # print(f"[TTS] Audio attribute type: {type(audio_waveform)}") # Covered by initial logging
+                print(f"[TTS] Audio attribute type: {type(audio_waveform)}")
 
-            # --- Start of new logic ---
-            # 1. Add Initial Logging
-            print(f"[TTS] Initial audio_waveform type: {type(audio_waveform)}")
-            if hasattr(audio_waveform, 'dtype'): print(f"[TTS] Initial audio_waveform dtype: {audio_waveform.dtype}")
-            if hasattr(audio_waveform, 'shape'): print(f"[TTS] Initial audio_waveform shape: {audio_waveform.shape}")
-            if isinstance(audio_waveform, list) and len(audio_waveform) > 0: print(f"[TTS] Initial audio_waveform is list, first element type: {type(audio_waveform[0])}")
+                # If it's a list, take the first item
+                if isinstance(audio_waveform, list):
+                    print(f"[TTS] Audio is a list, taking first item")
+                    audio_waveform = audio_waveform[0]
+                    print(f"[TTS] First item type: {type(audio_waveform)}")
 
-            # 2. Handle List of Tensors/Arrays for audio_waveform
-            if isinstance(audio_waveform, list):
-                if len(audio_waveform) > 0 and all(isinstance(item, torch.Tensor) for item in audio_waveform):
-                    print(f"[TTS] audio_waveform is a list of tensors. Concatenating...")
-                    audio_waveform = torch.cat([item.cpu().float() for item in audio_waveform], dim=0) # Ensure items are float and on CPU before cat
-                    print(f"[TTS] Concatenated audio_waveform: shape={audio_waveform.shape}, dtype={audio_waveform.dtype}")
-                elif len(audio_waveform) > 0 and all(isinstance(item, np.ndarray) for item in audio_waveform):
-                    print(f"[TTS] audio_waveform is a list of numpy arrays. Concatenating...")
-                    audio_waveform = np.concatenate([item.astype(np.float32) for item in audio_waveform], axis=0)
-                    audio_waveform = torch.from_numpy(audio_waveform) # Convert to tensor
-                    print(f"[TTS] Concatenated and tensor-converted audio_waveform: shape={audio_waveform.shape}, dtype={audio_waveform.dtype}")
-                else:
-                    print(f"[TTS] audio_waveform is a list, but elements are not all tensors or ndarrays, or list is empty. Type of first element: {type(audio_waveform[0]) if len(audio_waveform) > 0 else 'Empty list'}")
-                    # Attempt to convert to tensor if it's a list of numbers (e.g. from S2ST)
-                    if len(audio_waveform) > 0 and isinstance(audio_waveform[0], (int, float)):
-                        print(f"[TTS] Attempting to convert list of numbers to tensor.")
-                        try:
-                            audio_waveform = torch.tensor(audio_waveform, dtype=torch.float32)
-                            print(f"[TTS] Converted list of numbers to tensor: shape={audio_waveform.shape}, dtype={audio_waveform.dtype}")
-                        except Exception as e_conv:
-                            print(f"[TTS] Failed to convert list of numbers to tensor: {e_conv}")
-                            raise HTTPException(status_code=500, detail="Audio data is a list of numbers but could not be converted to a tensor.")
+                # If it's a tensor, ensure it's on the right device
+                if isinstance(audio_waveform, torch.Tensor):
+                    print(f"[TTS] Audio is a tensor, ensuring correct device")
+                    if torch.cuda.is_available():
+                        audio_waveform = audio_waveform.cuda()
+                    else:
+                        audio_waveform = audio_waveform.cpu()
+                    print(f"[TTS] Tensor device: {audio_waveform.device}")
+                    print(f"[TTS] Tensor shape: {audio_waveform.shape}")
+                    print(f"[TTS] Tensor dtype: {audio_waveform.dtype}")
 
+                # If it's not a tensor, convert to numpy first
+                if not isinstance(audio_waveform, torch.Tensor):
+                    print(f"[TTS] Converting to numpy array first")
+                    if hasattr(audio_waveform, 'numpy'):
+                        print(f"[TTS] Using numpy() method")
+                        audio_numpy = audio_waveform.numpy()
+                    elif hasattr(audio_waveform, 'detach'):
+                        print(f"[TTS] Using detach().cpu().numpy()")
+                        audio_numpy = audio_waveform.detach().cpu().numpy()
+                    elif hasattr(audio_waveform, 'cpu'):
+                        print(f"[TTS] Using cpu().numpy()")
+                        audio_numpy = audio_waveform.cpu().numpy()
+                    else:
+                        print(f"[TTS] Using direct numpy conversion")
+                        audio_numpy = np.array(audio_waveform)
 
-            # 3. Ensure audio_waveform becomes a Tensor (if it was numpy.ndarray)
-            if isinstance(audio_waveform, np.ndarray):
-                print(f"[TTS] Converting numpy.ndarray audio_waveform to tensor. Original dtype: {audio_waveform.dtype}")
-                audio_waveform = torch.from_numpy(audio_waveform.astype(np.float32)) # Ensure float32
-                print(f"[TTS] Converted to tensor: shape={audio_waveform.shape}, dtype={audio_waveform.dtype}")
+                    # Ensure correct dtype
+                    print(
+                        f"[TTS] Original numpy array dtype: {audio_numpy.dtype}")
+                    audio_numpy = audio_numpy.astype(np.float32)
+                    print(
+                        f"[TTS] Converted numpy array dtype: {audio_numpy.dtype}")
+                    print(f"[TTS] Numpy array shape: {audio_numpy.shape}")
 
-            # 4. Existing block for non-tensor types (e.g. custom objects with .numpy())
-            # This should now primarily handle cases not covered by list processing or direct ndarray/tensor returns
-            if not isinstance(audio_waveform, torch.Tensor):
-                print(f"[TTS] audio_waveform is not a tensor. Type: {type(audio_waveform)}. Attempting conversion.")
-                if hasattr(audio_waveform, 'numpy'): # For types that have a .numpy() method
-                    print(f"[TTS] Using numpy() method")
-                    audio_numpy = audio_waveform.numpy()
-                elif hasattr(audio_waveform, 'detach') and hasattr(audio_waveform.detach(), 'cpu') and hasattr(audio_waveform.detach().cpu(), 'numpy'): # For types that need detach().cpu().numpy()
-                    print(f"[TTS] Using detach().cpu().numpy()")
-                    audio_numpy = audio_waveform.detach().cpu().numpy()
-                # Add more specific conversions if other types are encountered
-                else:
-                    # If it's still not a tensor here, and not np.ndarray (handled above), and not list (handled above)
-                    # it might be an unexpected type.
-                    print(f"[TTS] audio_waveform is of unexpected type {type(audio_waveform)}. Trying direct np.array conversion.")
-                    try:
-                        audio_numpy = np.array(audio_waveform, dtype=object) # Try converting, then check dtype
-                        if audio_numpy.dtype == object:
-                            print(f"[TTS] Warning: audio_numpy is of dtype 'object'. This might lead to issues.")
-                            # Attempt to flatten if it's a list of lists/arrays of numbers
-                            if isinstance(audio_numpy[0], (list, np.ndarray)): 
-                                print(f"[TTS] Attempting to flatten and convert object array.")
-                                audio_numpy = np.concatenate([np.array(item, dtype=np.float32) for item in audio_numpy.tolist()]).astype(np.float32)
-                            else:
-                                raise HTTPException(status_code=500, detail=f"Audio data is of problematic object type after conversion: {audio_numpy.dtype}")
-                    except Exception as e_direct_np:
-                        print(f"[TTS] Direct np.array conversion failed: {e_direct_np}")
-                        raise HTTPException(status_code=500, detail=f"Audio data is of unsupported type {type(audio_waveform)} and could not be converted.")
+                    # Convert back to tensor
+                    print(f"[TTS] Converting numpy array to tensor")
+                    audio_waveform = torch.from_numpy(audio_numpy)
+                    if torch.cuda.is_available():
+                        audio_waveform = audio_waveform.cuda()
 
-                print(f"[TTS] Numpy array before astype: dtype={audio_numpy.dtype}, shape={audio_numpy.shape if hasattr(audio_numpy, 'shape') else 'N/A'}")
-                audio_numpy = audio_numpy.astype(np.float32) # Ensure float32
-                print(f"[TTS] Converted numpy array dtype: {audio_numpy.dtype}, shape={audio_numpy.shape}")
-                audio_waveform = torch.from_numpy(audio_numpy)
-                print(f"[TTS] Converted to tensor: shape={audio_waveform.shape}, dtype={audio_waveform.dtype}")
-
-
-            if audio_waveform is None: # Should be redundant if errors are raised above, but good check.
+            if audio_waveform is None:
                 raise HTTPException(
                     status_code=500,
-                    detail="Model failed to generate audio waveform or waveform became None after processing"
+                    detail="Model failed to generate audio waveform"
                 )
 
             print(f"[TTS] Processing audio data...")
             try:
                 # Ensure we have a tensor before checking dimensions
                 if not isinstance(audio_waveform, torch.Tensor):
-                    # This should ideally not be reached if the above logic is comprehensive
-                    print(f"[TTS] CRITICAL: audio_waveform is NOT a tensor before dimension check. Type: {type(audio_waveform)}. This indicates a flaw in processing logic.")
-                    # Attempt a final conversion, though this signifies an issue
-                    try:
-                        audio_waveform = torch.tensor(np.array(audio_waveform), dtype=torch.float32)
-                        print(f"[TTS] Last resort conversion to tensor successful. Shape: {audio_waveform.shape}, dtype: {audio_waveform.dtype}")
-                    except Exception as e_final_conv:
-                         print(f"[TTS] Last resort conversion to tensor FAILED: {e_final_conv}")
-                         raise HTTPException(status_code=500, detail=f"Audio data could not be converted to a tensor before saving. Type was {type(audio_waveform)}.")
+                    print(f"[TTS] Converting to tensor before dimension check")
+                    if isinstance(audio_waveform, (list, tuple)):
+                        print(f"[TTS] Converting list/tuple to tensor")
+                        audio_waveform = torch.tensor(
+                            audio_waveform, dtype=torch.float32)
+                    else:
+                        print(f"[TTS] Converting other type to tensor")
+                        audio_waveform = torch.tensor(
+                            np.array(audio_waveform), dtype=torch.float32)
 
+                    if torch.cuda.is_available():
+                        audio_waveform = audio_waveform.cuda()
 
                 # Add channel dimension if needed
                 if audio_waveform.ndim == 1:
                     print(f"[TTS] Adding channel dimension to audio data")
                     audio_waveform = audio_waveform.unsqueeze(0)
-                elif audio_waveform.ndim > 2: # E.g. if it was a batch and got concatenated to (batch_size, channels, length)
-                    print(f"[TTS] Audio waveform has more than 2 dimensions (shape: {audio_waveform.shape}). Assuming first dim is batch, taking first element.")
-                    audio_waveform = audio_waveform[0]
-                    if audio_waveform.ndim == 1: # Check again after taking first element
-                        audio_waveform = audio_waveform.unsqueeze(0)
 
-
-                print(f"[TTS] Final audio data shape for saving: {audio_waveform.shape}")
-                print(f"[TTS] Final audio data type for saving: {audio_waveform.dtype}")
+                print(f"[TTS] Final audio data shape: {audio_waveform.shape}")
+                print(f"[TTS] Final audio data type: {audio_waveform.dtype}")
                 print(
-                    f"[TTS] Final audio data device for saving: {audio_waveform.device}")
+                    f"[TTS] Final audio data device: {audio_waveform.device}")
 
-                # 5. Final Data Type Check and Conversion before torchaudio.save
-                print(f"[TTS] Before .cpu(): audio_waveform type={type(audio_waveform)}, dtype={audio_waveform.dtype if hasattr(audio_waveform, 'dtype') else 'N/A'}, device={audio_waveform.device if hasattr(audio_waveform, 'device') else 'N/A'}, shape={audio_waveform.shape if hasattr(audio_waveform, 'shape') else 'N/A'}")
-                if not isinstance(audio_waveform, torch.Tensor):
-                    print(f"[TTS] ERROR: audio_waveform is not a tensor just before .cpu() call. Type: {type(audio_waveform)}")
-                    # This indicates a severe logic error if reached.
-                    raise HTTPException(status_code=500, detail="Audio data was not a tensor before final CPU conversion.")
-                audio_data_cpu = audio_waveform.float().cpu() # Ensure float32
+                # Move to CPU for saving
+                print(f"[TTS] Moving audio data to CPU for saving...")
+                audio_data_cpu = audio_waveform.cpu()
 
             except Exception as e:
                 print(f"[TTS] Error processing audio data: {e}")
@@ -404,8 +370,7 @@ async def text_to_speech(request: TTSRequest):
             print(f"[TTS] Created temporary file: {temp_audio_path}")
 
             try:
-                # 6. Add Logging before torchaudio.save
-                print(f"[TTS] Attempting torchaudio.save with audio_data_cpu: type={type(audio_data_cpu)}, dtype={audio_data_cpu.dtype}, shape={audio_data_cpu.shape}, device={audio_data_cpu.device}")
+                print(f"[TTS] Saving audio to file...")
                 torchaudio.save(
                     temp_audio_path,
                     audio_data_cpu,
@@ -497,4 +462,3 @@ async def health_check():
             "model_loaded": model_translator is not None,
             "gpu_available": torch.cuda.is_available()
         }
-
