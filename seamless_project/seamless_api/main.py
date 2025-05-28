@@ -322,8 +322,15 @@ async def text_to_speech(request: TTSRequest):
                 # Ensure we have a tensor before checking dimensions
                 if not isinstance(audio_waveform, torch.Tensor):
                     print(f"[TTS] Converting to tensor before dimension check")
-                    audio_waveform = torch.tensor(
-                        audio_waveform, dtype=torch.float32)
+                    if isinstance(audio_waveform, (list, tuple)):
+                        print(f"[TTS] Converting list/tuple to tensor")
+                        audio_waveform = torch.tensor(
+                            audio_waveform, dtype=torch.float32)
+                    else:
+                        print(f"[TTS] Converting other type to tensor")
+                        audio_waveform = torch.tensor(
+                            np.array(audio_waveform), dtype=torch.float32)
+
                     if torch.cuda.is_available():
                         audio_waveform = audio_waveform.cuda()
 
