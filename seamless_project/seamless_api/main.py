@@ -260,31 +260,28 @@ async def text_to_speech(request: TTSRequest):
                 print(
                     f"[TTS] BatchedSpeechOutput attributes: {dir(audio_waveform)}")
 
-                # Try to get the audio data
-                if hasattr(audio_waveform, 'audio'):
-                    audio_waveform = audio_waveform.audio
-                    print(
-                        f"[TTS] Audio attribute type: {type(audio_waveform)}")
-                    print(
-                        f"[TTS] Audio attribute shape: {audio_waveform.shape if hasattr(audio_waveform, 'shape') else 'No shape'}")
+                # Get the audio data from BatchedSpeechOutput
+                audio_waveform = audio_waveform.audio
+                print(f"[TTS] Audio attribute type: {type(audio_waveform)}")
 
                 # If it's a list, take the first item
                 if isinstance(audio_waveform, list):
                     print(f"[TTS] Audio is a list, taking first item")
                     audio_waveform = audio_waveform[0]
                     print(f"[TTS] First item type: {type(audio_waveform)}")
-                    print(
-                        f"[TTS] First item shape: {audio_waveform.shape if hasattr(audio_waveform, 'shape') else 'No shape'}")
 
-            if audio_waveform is None:
-                raise HTTPException(
-                    status_code=500,
-                    detail="Model failed to generate audio waveform"
-                )
+                # If it's a tensor, ensure it's on the right device
+                if isinstance(audio_waveform, torch.Tensor):
+                    print(f"[TTS] Audio is a tensor, ensuring correct device")
+                    if torch.cuda.is_available():
+                        audio_waveform = audio_waveform.cuda()
+                    else:
+                        audio_waveform = audio_waveform.cpu()
+                    print(f"[TTS] Tensor device: {audio_waveform.device}")
+                    print(f"[TTS] Tensor shape: {audio_waveform.shape}")
+                    print(f"[TTS] Tensor dtype: {audio_waveform.dtype}")
 
-            print(f"[TTS] Processing audio data...")
-            try:
-                # Convert to numpy array first if it's not already a tensor
+                # If it's not a tensor, convert to numpy first
                 if not isinstance(audio_waveform, torch.Tensor):
                     print(f"[TTS] Converting to numpy array first")
                     if hasattr(audio_waveform, 'numpy'):
@@ -308,23 +305,31 @@ async def text_to_speech(request: TTSRequest):
                         f"[TTS] Converted numpy array dtype: {audio_numpy.dtype}")
                     print(f"[TTS] Numpy array shape: {audio_numpy.shape}")
 
+                    # Convert back to tensor
                     print(f"[TTS] Converting numpy array to tensor")
                     audio_waveform = torch.from_numpy(audio_numpy)
+                    if torch.cuda.is_available():
+                        audio_waveform = audio_waveform.cuda()
 
-                # Ensure we're on the right device
-                if torch.cuda.is_available():
-                    audio_waveform = audio_waveform.cuda()
+            if audio_waveform is None:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Model failed to generate audio waveform"
+                )
 
+            print(f"[TTS] Processing audio data...")
+            try:
                 # Add channel dimension if needed
                 if audio_waveform.ndim == 1:
                     print(f"[TTS] Adding channel dimension to audio data")
                     audio_waveform = audio_waveform.unsqueeze(0)
 
-                print(f"[TTS] Audio data shape: {audio_waveform.shape}")
-                print(f"[TTS] Audio data type: {audio_waveform.dtype}")
-                print(f"[TTS] Audio data device: {audio_waveform.device}")
+                print(f"[TTS] Final audio data shape: {audio_waveform.shape}")
+                print(f"[TTS] Final audio data type: {audio_waveform.dtype}")
+                print(
+                    f"[TTS] Final audio data device: {audio_waveform.device}")
 
-                # Only move to CPU when saving to file
+                # Move to CPU for saving
                 print(f"[TTS] Moving audio data to CPU for saving...")
                 audio_data_cpu = audio_waveform.cpu()
 
@@ -409,3 +414,36 @@ async def text_to_speech(request: TTSRequest):
                     f"[TTS] Error cleaning up temporary file {temp_audio_path}: {e_cleanup}")
         raise HTTPException(
             status_code=500, detail=f"TTS generation failed: {str(e)}")
+
+
+@app.get("/health")
+async def health_check():
+    """
+    Health check endpoint to monitor API status.
+    """
+    try:
+        if model_translator is None:
+            return {"status": "error", "message": "Model not loaded"}
+
+        # Try a simple prediction to verify model is working
+        test_text = "Hello"
+        result = model_translator.predict(
+            input=test_text,
+            task_str="t2tt",
+            src_lang="eng",
+            tgt_lang="eng"
+        )
+
+        return {
+            "status": "healthy",
+            "model_loaded": True,
+            "gpu_available": torch.cuda.is_available(),
+            "gpu_device": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e),
+            "model_loaded": model_translator is not None,
+            "gpu_available": torch.cuda.is_available()
+        }

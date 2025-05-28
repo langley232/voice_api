@@ -9,6 +9,23 @@ import threading
 # API URL (assuming Docker Compose networking)
 API_URL = "http://seamless_api:8000"
 
+# Check API health
+try:
+    health_response = requests.get(f"{API_URL}/health", timeout=5)
+    if health_response.status_code == 200:
+        health_data = health_response.json()
+        if health_data.get("status") == "healthy":
+            st.sidebar.success("API Status: Healthy")
+            if health_data.get("gpu_available"):
+                st.sidebar.info(f"GPU: {health_data.get('gpu_device')}")
+        else:
+            st.sidebar.error(
+                f"API Status: {health_data.get('message', 'Unknown error')}")
+    else:
+        st.sidebar.error("API Status: Unhealthy")
+except Exception as e:
+    st.sidebar.error(f"API Status: Cannot connect - {str(e)}")
+
 # Page Configuration
 st.set_page_config(layout="wide")
 st.title("Voice Translation and Speech Services")
@@ -56,6 +73,10 @@ if 'audio_data' not in st.session_state:
     st.session_state.audio_data = None
 if 'asr_audio_data' not in st.session_state:
     st.session_state.asr_audio_data = None
+if 'transcribed_text_from_audio' not in st.session_state:
+    st.session_state.transcribed_text_from_audio = None
+if 'text_to_translate_input' not in st.session_state:
+    st.session_state.text_to_translate_input = ""
 
 # Audio recording callbacks
 
@@ -116,7 +137,8 @@ if st.session_state.audio_data is not None:
                 f"{API_URL}/stt", files=files, timeout=60)
             if stt_response.status_code == 200:
                 stt_data = stt_response.json()
-                transcribed_text_from_audio = stt_data.get('text')
+                st.session_state.transcribed_text_from_audio = stt_data.get(
+                    'text')
                 detected_lang_code = stt_data.get('language')
 
                 # Try to match detected lang code with our display names
@@ -129,8 +151,9 @@ if st.session_state.audio_data is not None:
                 st.success(
                     f"Transcription successful! Detected Language: {detected_lang_display}")
                 # Pre-fill text area
-                st.session_state.text_to_translate_input = transcribed_text_from_audio
-                st.write(f"Transcribed text: {transcribed_text_from_audio}")
+                st.session_state.text_to_translate_input = st.session_state.transcribed_text_from_audio
+                st.write(
+                    f"Transcribed text: {st.session_state.transcribed_text_from_audio}")
 
                 # Update source language if different from current selection and detected
                 if source_language != detected_lang_code and detected_lang_code in lang_codes:
@@ -149,8 +172,6 @@ if st.session_state.audio_data is not None:
 
 # Text Input (Alternative)
 st.subheader("Or Type Text to Translate")
-if 'text_to_translate_input' not in st.session_state:
-    st.session_state.text_to_translate_input = ""
 
 text_input = st.text_area(
     "Text to translate:",
@@ -159,15 +180,14 @@ text_input = st.text_area(
     height=150
 )
 
-
 # Translate Button
 if st.button("Translate", key='translate_button'):
     # Determine the text to translate
     final_text_to_translate = None
 
     # Priority to newly transcribed text if available and text area hasn't been manually edited since
-    if transcribed_text_from_audio and st.session_state.text_to_translate_input == transcribed_text_from_audio:
-        final_text_to_translate = transcribed_text_from_audio
+    if st.session_state.transcribed_text_from_audio and st.session_state.text_to_translate_input == st.session_state.transcribed_text_from_audio:
+        final_text_to_translate = st.session_state.transcribed_text_from_audio
         st.info("Using transcribed text from recent recording for translation.")
     # Text from text_area (could be from STT or manually typed)
     elif text_input:
