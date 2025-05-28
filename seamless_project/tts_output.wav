@@ -1,1 +1,1 @@
-{"detail":"TTS generation failed: 500: Failed to process audio data: 'BatchedSpeechOutput' object has no attribute 'cpu'"}
+{"detail":"TTS generation failed: 500: Failed to process audio data: can't convert np.ndarray of type numpy.object_. The only supported types are: float64, float32, float16, complex64, complex128, int64, int32, int16, int8, uint8, and bool."}
