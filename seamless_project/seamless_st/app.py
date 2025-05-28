@@ -5,29 +5,53 @@ import av
 import numpy as np
 import queue
 import threading
+import time
+
+# Page Configuration must be the first Streamlit command
+st.set_page_config(layout="wide")
 
 # API URL (assuming Docker Compose networking)
 API_URL = "http://seamless_api:8000"
 
-# Check API health
-try:
-    health_response = requests.get(f"{API_URL}/health", timeout=5)
-    if health_response.status_code == 200:
-        health_data = health_response.json()
-        if health_data.get("status") == "healthy":
-            st.sidebar.success("API Status: Healthy")
-            if health_data.get("gpu_available"):
-                st.sidebar.info(f"GPU: {health_data.get('gpu_device')}")
-        else:
-            st.sidebar.error(
-                f"API Status: {health_data.get('message', 'Unknown error')}")
-    else:
-        st.sidebar.error("API Status: Unhealthy")
-except Exception as e:
-    st.sidebar.error(f"API Status: Cannot connect - {str(e)}")
+# Function to check API health with retries
 
-# Page Configuration
-st.set_page_config(layout="wide")
+
+def check_api_health(max_retries=5, retry_delay=2):
+    for attempt in range(max_retries):
+        try:
+            health_response = requests.get(f"{API_URL}/health", timeout=5)
+            if health_response.status_code == 200:
+                health_data = health_response.json()
+                if health_data.get("status") == "healthy":
+                    return True, health_data
+                else:
+                    return False, health_data.get('message', 'Unknown error')
+            else:
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                return False, "API returned unhealthy status"
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+                continue
+            return False, str(e)
+    return False, "Max retries exceeded"
+
+
+# Check API health with retries
+is_healthy, health_message = check_api_health()
+
+# Display API status in sidebar
+with st.sidebar:
+    if is_healthy:
+        st.success("API Status: Healthy")
+        if isinstance(health_message, dict) and health_message.get("gpu_available"):
+            st.info(f"GPU: {health_message.get('gpu_device')}")
+    else:
+        st.error(f"API Status: {health_message}")
+
+# Main title
 st.title("Voice Translation and Speech Services")
 
 # --- Translation Section ---
