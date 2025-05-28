@@ -282,32 +282,47 @@ async def text_to_speech(request: TTSRequest):
                 # If it's not a tensor, convert to numpy first
                 if not isinstance(audio_waveform, torch.Tensor):
                     print(f"[TTS] Converting to numpy array first")
-                    if hasattr(audio_waveform, 'numpy'):
-                        print(f"[TTS] Using numpy() method")
-                        audio_numpy = audio_waveform.numpy()
-                    elif hasattr(audio_waveform, 'detach'):
-                        print(f"[TTS] Using detach().cpu().numpy()")
-                        audio_numpy = audio_waveform.detach().cpu().numpy()
-                    elif hasattr(audio_waveform, 'cpu'):
-                        print(f"[TTS] Using cpu().numpy()")
-                        audio_numpy = audio_waveform.cpu().numpy()
-                    else:
-                        print(f"[TTS] Using direct numpy conversion")
-                        audio_numpy = np.array(audio_waveform)
+                    try:
+                        if hasattr(audio_waveform, 'numpy'):
+                            print(f"[TTS] Using numpy() method")
+                            audio_numpy = audio_waveform.numpy()
+                        elif hasattr(audio_waveform, 'detach'):
+                            print(f"[TTS] Using detach().cpu().numpy()")
+                            audio_numpy = audio_waveform.detach().cpu().numpy()
+                        elif hasattr(audio_waveform, 'cpu'):
+                            print(f"[TTS] Using cpu().numpy()")
+                            audio_numpy = audio_waveform.cpu().numpy()
+                        else:
+                            print(f"[TTS] Using direct numpy conversion")
+                            audio_numpy = np.array(audio_waveform)
 
-                    # Ensure correct dtype
-                    print(
-                        f"[TTS] Original numpy array dtype: {audio_numpy.dtype}")
-                    audio_numpy = audio_numpy.astype(np.float32)
-                    print(
-                        f"[TTS] Converted numpy array dtype: {audio_numpy.dtype}")
-                    print(f"[TTS] Numpy array shape: {audio_numpy.shape}")
+                        # Check if we got an object array
+                        if audio_numpy.dtype == np.dtype('O'):
+                            print(
+                                f"[TTS] Warning: Got object array, attempting to convert to float32")
+                            # Try to convert each element to float32
+                            audio_numpy = np.array(
+                                [np.array(x, dtype=np.float32) for x in audio_numpy], dtype=np.float32)
 
-                    # Convert back to tensor
-                    print(f"[TTS] Converting numpy array to tensor")
-                    audio_waveform = torch.from_numpy(audio_numpy)
-                    if torch.cuda.is_available():
-                        audio_waveform = audio_waveform.cuda()
+                        # Ensure correct dtype
+                        print(
+                            f"[TTS] Original numpy array dtype: {audio_numpy.dtype}")
+                        audio_numpy = audio_numpy.astype(np.float32)
+                        print(
+                            f"[TTS] Converted numpy array dtype: {audio_numpy.dtype}")
+                        print(f"[TTS] Numpy array shape: {audio_numpy.shape}")
+
+                        # Convert back to tensor
+                        print(f"[TTS] Converting numpy array to tensor")
+                        audio_waveform = torch.from_numpy(audio_numpy)
+                        if torch.cuda.is_available():
+                            audio_waveform = audio_waveform.cuda()
+                    except Exception as e:
+                        print(f"[TTS] Error during numpy conversion: {str(e)}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Failed to convert audio data to tensor: {str(e)}"
+                        )
 
             if audio_waveform is None:
                 raise HTTPException(
@@ -320,17 +335,27 @@ async def text_to_speech(request: TTSRequest):
                 # Ensure we have a tensor before checking dimensions
                 if not isinstance(audio_waveform, torch.Tensor):
                     print(f"[TTS] Converting to tensor before dimension check")
-                    if isinstance(audio_waveform, (list, tuple)):
-                        print(f"[TTS] Converting list/tuple to tensor")
-                        audio_waveform = torch.tensor(
-                            audio_waveform, dtype=torch.float32)
-                    else:
-                        print(f"[TTS] Converting other type to tensor")
-                        audio_waveform = torch.tensor(
-                            np.array(audio_waveform), dtype=torch.float32)
+                    try:
+                        if isinstance(audio_waveform, (list, tuple)):
+                            print(f"[TTS] Converting list/tuple to tensor")
+                            audio_waveform = torch.tensor(
+                                audio_waveform, dtype=torch.float32)
+                        else:
+                            print(f"[TTS] Converting other type to tensor")
+                            # Ensure we're working with a float32 array before converting to tensor
+                            audio_array = np.array(
+                                audio_waveform, dtype=np.float32)
+                            audio_waveform = torch.from_numpy(audio_array)
 
-                    if torch.cuda.is_available():
-                        audio_waveform = audio_waveform.cuda()
+                        if torch.cuda.is_available():
+                            audio_waveform = audio_waveform.cuda()
+                    except Exception as e:
+                        print(
+                            f"[TTS] Error during final tensor conversion: {str(e)}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Failed to convert audio data to tensor: {str(e)}"
+                        )
 
                 # Add channel dimension if needed
                 if audio_waveform.ndim == 1:
