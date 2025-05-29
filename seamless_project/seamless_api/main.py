@@ -26,44 +26,55 @@ SUPPORTED_LANGUAGES = {
 }
 
 # --- Custom Exceptions ---
+
+
 class ModelNotLoadedError(Exception):
     """Raised when the model is not loaded."""
     pass
+
 
 class AudioProcessingError(Exception):
     """Raised when there's an error processing audio data."""
     pass
 
+
 class TranslationError(Exception):
     """Raised when there's an error during translation."""
     pass
+
 
 class UnsupportedLanguageError(Exception):
     """Raised when language is not supported for the requested task."""
     pass
 
 # --- Pydantic Models ---
+
+
 class TTSRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=1000)
     source_language: str = Field(..., min_length=2, max_length=5)
     target_language: str = Field(..., min_length=2, max_length=5)
     preserve_voice_style: bool = Field(default=False)
 
+
 class STTResponse(BaseModel):
     text: str
     language: str
     confidence: Optional[float] = None
+
 
 class TranslationRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=1000)
     source_language: str = Field(..., min_length=2, max_length=5)
     target_language: str = Field(..., min_length=2, max_length=5)
 
+
 class TranslationResponse(BaseModel):
     translated_text: str
     source_language: str
     target_language: str
     processing_time: float
+
 
 class ModelMetrics:
     def __init__(self):
@@ -79,11 +90,14 @@ class ModelMetrics:
         else:
             self.failed_requests += 1
         self.average_processing_time = (
-            (self.average_processing_time * (self.total_requests - 1) + processing_time)
+            (self.average_processing_time *
+             (self.total_requests - 1) + processing_time)
             / self.total_requests
         )
 
 # --- Model Management ---
+
+
 class ModelManager:
     def __init__(self):
         self.model = None
@@ -104,17 +118,34 @@ class ModelManager:
                 self.dtype = torch.float32
                 device_str = "CPU"
 
-            logger.info(f"Loading model on {device_str} with dtype {self.dtype}")
+            logger.info(
+                f"Loading model on {device_str} with dtype {self.dtype}")
 
             from transformers import SeamlessM4Tv2Model, AutoProcessor
-            self.processor = AutoProcessor.from_pretrained(self.version)
-            self.model = SeamlessM4Tv2Model.from_pretrained(
-                self.version,
-                device_map=self.device,
-                torch_dtype=self.dtype
-            )
-            self.last_loaded = datetime.now()
-            logger.info(f"Successfully loaded model on {device_str}")
+            try:
+                logger.info("Loading processor...")
+                self.processor = AutoProcessor.from_pretrained(
+                    self.version,
+                    trust_remote_code=True
+                )
+                logger.info("Processor loaded successfully")
+
+                logger.info("Loading model...")
+                self.model = SeamlessM4Tv2Model.from_pretrained(
+                    self.version,
+                    device_map=self.device,
+                    torch_dtype=self.dtype,
+                    trust_remote_code=True
+                )
+                logger.info("Model loaded successfully")
+
+                self.last_loaded = datetime.now()
+                logger.info(f"Successfully loaded model on {device_str}")
+
+            except Exception as e:
+                logger.error(f"Error loading model components: {str(e)}")
+                raise ModelNotLoadedError(
+                    f"Model component loading failed: {str(e)}")
 
         except Exception as e:
             logger.error(f"Failed to load model: {str(e)}")
@@ -128,6 +159,7 @@ class ModelManager:
             raise ModelNotLoadedError("Model is not loaded")
         return self.model, self.processor
 
+
 # Initialize model manager
 model_manager = ModelManager()
 
@@ -139,6 +171,8 @@ app = FastAPI(
 )
 
 # --- Helper Functions ---
+
+
 def validate_language_support(
     source_lang: str,
     target_lang: str,
@@ -151,6 +185,7 @@ def validate_language_support(
             return False, f"Language {target_lang} not supported for speech output"
     return True, ""
 
+
 async def process_streaming_audio(audio_data: bytes, model, processor):
     try:
         # Process streaming audio using SeamlessM4T v2
@@ -162,12 +197,16 @@ async def process_streaming_audio(audio_data: bytes, model, processor):
         raise AudioProcessingError(str(e))
 
 # --- Dependencies ---
+
+
 async def get_model():
     if not model_manager.is_loaded():
         raise HTTPException(status_code=503, detail="Model not loaded")
     return model_manager.get_model()
 
 # --- Startup Event ---
+
+
 @app.on_event("startup")
 async def startup_event():
     try:
@@ -176,6 +215,8 @@ async def startup_event():
         logger.error(f"Failed to load model during startup: {str(e)}")
 
 # --- Health Check ---
+
+
 @app.get("/health")
 async def health_check():
     return {
@@ -193,6 +234,8 @@ async def health_check():
     }
 
 # --- STT Endpoint ---
+
+
 @app.post("/stt", response_model=STTResponse)
 async def speech_to_text(
     audio_file: UploadFile = File(...),
@@ -214,10 +257,12 @@ async def speech_to_text(
 
         # Process audio using the processor
         audio_inputs = processor(audios=temp_audio_path, return_tensors="pt")
-        outputs = model.generate(**audio_inputs, task="s2t_transcript", tgt_lang="eng")
+        outputs = model.generate(
+            **audio_inputs, task="s2t_transcript", tgt_lang="eng")
 
         # Convert outputs to text
-        transcribed_text = processor.decode(outputs[0].cpu(), skip_special_tokens=True)
+        transcribed_text = processor.decode(
+            outputs[0].cpu(), skip_special_tokens=True)
         detected_language = outputs[1] if len(outputs) > 1 else "unknown"
 
         if not transcribed_text:
@@ -243,6 +288,8 @@ async def speech_to_text(
             os.remove(temp_audio_path)
 
 # --- TTS Endpoint ---
+
+
 @app.post("/tts")
 async def text_to_speech(
     request: TTSRequest,
@@ -267,7 +314,7 @@ async def text_to_speech(
             src_lang=request.source_language,
             return_tensors="pt"
         )
-        
+
         outputs = model.generate(
             **inputs,
             tgt_lang=request.target_language,
@@ -300,6 +347,8 @@ async def text_to_speech(
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- Translation Endpoint ---
+
+
 @app.post("/translate", response_model=TranslationResponse)
 async def translate_text(
     request: TranslationRequest,
@@ -324,14 +373,15 @@ async def translate_text(
             src_lang=request.source_language,
             return_tensors="pt"
         )
-        
+
         outputs = model.generate(
             **inputs,
             task="t2tt",
             tgt_lang=request.target_language
         )
 
-        translated_text = processor.decode(outputs[0].cpu(), skip_special_tokens=True)
+        translated_text = processor.decode(
+            outputs[0].cpu(), skip_special_tokens=True)
 
         processing_time = (datetime.now() - start_time).total_seconds()
         model_manager.metrics.update_metrics(True, processing_time)
@@ -350,6 +400,8 @@ async def translate_text(
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- Streaming Translation Endpoint ---
+
+
 @app.websocket("/stream-translation")
 async def stream_translation(websocket: WebSocket):
     await websocket.accept()
