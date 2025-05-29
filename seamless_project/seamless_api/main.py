@@ -280,13 +280,28 @@ async def text_to_speech(
             tgt_lang=request.target_language,
         )
 
+        # Log the raw result
+        logger.info(f"Raw model output type: {type(result)}")
+        if isinstance(result, tuple):
+            logger.info(f"Result tuple length: {len(result)}")
+            for i, item in enumerate(result):
+                logger.info(f"Result item {i} type: {type(item)}")
+                if hasattr(item, 'shape'):
+                    logger.info(f"Result item {i} shape: {item.shape}")
+                elif hasattr(item, '__len__'):
+                    logger.info(f"Result item {i} length: {len(item)}")
+
         # Handle model output
         if isinstance(result, tuple):
             if len(result) == 3:
                 output_text, audio_waveform, audio_sample_rate = result
+                logger.info(
+                    f"Got 3-tuple result: text={type(output_text)}, audio={type(audio_waveform)}, sample_rate={audio_sample_rate}")
             elif len(result) == 2:
                 output_text, audio_waveform = result
                 audio_sample_rate = 16000
+                logger.info(
+                    f"Got 2-tuple result: text={type(output_text)}, audio={type(audio_waveform)}")
             else:
                 raise AudioProcessingError(
                     f"Unexpected number of return values: {len(result)}")
@@ -296,37 +311,85 @@ async def text_to_speech(
 
         # Process audio waveform
         if hasattr(audio_waveform, 'audio'):
+            logger.info(
+                f"Audio waveform has 'audio' attribute. Original type: {type(audio_waveform)}")
             audio_waveform = audio_waveform.audio
+            logger.info(
+                f"After accessing 'audio' attribute, type: {type(audio_waveform)}")
             if isinstance(audio_waveform, list):
+                logger.info(
+                    f"Audio waveform is a list of length {len(audio_waveform)}")
                 audio_waveform = audio_waveform[0]
+                logger.info(
+                    f"After taking first element, type: {type(audio_waveform)}")
 
         # Convert to tensor if needed
         if not isinstance(audio_waveform, torch.Tensor):
             try:
+                # Convert to numpy array first
                 if hasattr(audio_waveform, 'numpy'):
+                    logger.info("Converting using numpy() method")
                     audio_numpy = audio_waveform.numpy()
                 elif hasattr(audio_waveform, 'detach'):
+                    logger.info("Converting using detach().cpu().numpy()")
                     audio_numpy = audio_waveform.detach().cpu().numpy()
                 else:
+                    logger.info(
+                        f"Converting using np.array() from type: {type(audio_waveform)}")
                     audio_numpy = np.array(audio_waveform)
 
-                # Handle object dtype arrays
-                if audio_numpy.dtype == np.dtype('O'):
+                logger.info(
+                    f"Numpy array shape: {audio_numpy.shape}, dtype: {audio_numpy.dtype}")
+
+                # Handle 0-d arrays
+                if audio_numpy.ndim == 0:
+                    logger.info("Converting 0-d array to 1-d array")
                     audio_numpy = np.array(
-                        [np.array(x, dtype=np.float32) for x in audio_numpy], dtype=np.float32)
+                        [audio_numpy.item()], dtype=np.float32)
+                # Handle object dtype arrays
+                elif audio_numpy.dtype == np.dtype('O'):
+                    logger.info("Converting object dtype array")
+                    if audio_numpy.size == 0:
+                        raise AudioProcessingError("Empty audio data received")
+                    # Try to convert each element to float32
+                    try:
+                        audio_numpy = np.array(
+                            [np.array(x, dtype=np.float32) for x in audio_numpy], dtype=np.float32)
+                        logger.info(
+                            f"Converted object array shape: {audio_numpy.shape}, dtype: {audio_numpy.dtype}")
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to convert object array: {str(e)}")
+                        raise AudioProcessingError(
+                            f"Failed to convert audio data: {str(e)}")
                 else:
                     audio_numpy = audio_numpy.astype(np.float32)
 
+                # Ensure we have a 1D or 2D array
+                if audio_numpy.ndim == 0:
+                    logger.info("Reshaping 0-d array to 1-d")
+                    audio_numpy = audio_numpy.reshape(1)
+                elif audio_numpy.ndim > 2:
+                    logger.info(f"Reshaping {audio_numpy.ndim}-d array to 2-d")
+                    audio_numpy = audio_numpy.reshape(-1,
+                                                      audio_numpy.shape[-1])
+
+                logger.info(
+                    f"Final numpy array shape: {audio_numpy.shape}, dtype: {audio_numpy.dtype}")
+
+                # Convert to tensor
                 audio_waveform = torch.from_numpy(audio_numpy)
                 if torch.cuda.is_available():
                     audio_waveform = audio_waveform.cuda()
 
             except Exception as e:
+                logger.error(f"Audio conversion error: {str(e)}")
                 raise AudioProcessingError(
                     f"Failed to convert audio data: {str(e)}")
 
         # Add channel dimension if needed
         if audio_waveform.ndim == 1:
+            logger.info("Adding channel dimension to audio data")
             audio_waveform = audio_waveform.unsqueeze(0)
 
         # Save audio file
@@ -334,6 +397,8 @@ async def text_to_speech(
         os.close(fd)
 
         audio_data_cpu = audio_waveform.cpu()
+        logger.info(
+            f"Final audio tensor shape: {audio_data_cpu.shape}, dtype: {audio_data_cpu.dtype}")
         torchaudio.save(temp_audio_path, audio_data_cpu, audio_sample_rate)
 
         processing_time = (datetime.now() - start_time).total_seconds()
