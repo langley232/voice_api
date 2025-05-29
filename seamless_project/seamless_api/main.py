@@ -326,6 +326,16 @@ async def text_to_speech(
         # Convert to tensor if needed
         if not isinstance(audio_waveform, torch.Tensor):
             try:
+                # Handle BatchedSpeechOutput directly
+                if hasattr(audio_waveform, 'audio'):
+                    logger.info(
+                        "Converting BatchedSpeechOutput audio attribute")
+                    audio_waveform = audio_waveform.audio
+                    if isinstance(audio_waveform, list):
+                        audio_waveform = audio_waveform[0]
+                    logger.info(
+                        f"After BatchedSpeechOutput conversion, type: {type(audio_waveform)}")
+
                 # Convert to numpy array first
                 if hasattr(audio_waveform, 'numpy'):
                     logger.info("Converting using numpy() method")
