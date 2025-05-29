@@ -2,7 +2,21 @@ FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
+# Add retry logic and multiple mirrors for apt-get
+RUN echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries && \
+    echo 'Acquire::http::Timeout "120";' >> /etc/apt/apt.conf.d/80-retries && \
+    echo 'Acquire::https::Timeout "120";' >> /etc/apt/apt.conf.d/80-retries && \
+    echo 'Acquire::ftp::Timeout "120";' >> /etc/apt/apt.conf.d/80-retries
+
+# Add additional mirrors
+RUN echo "deb http://mirrors.kernel.org/ubuntu/ jammy main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.kernel.org/ubuntu/ jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.kernel.org/ubuntu/ jammy-security main restricted universe multiverse" >> /etc/apt/sources.list
+
+# Update and install packages with retry logic
+RUN for i in $(seq 1 3); do \
+    apt-get update && break || sleep 15; \
+    done && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
     git \
